@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}</style></head><body>
+<title>Adult Day Care Catalog</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: wholesale price book. Catalog rail left; the catalog itself in the middle, drawn like the printed sheet; an edit drawer slides in from the right. */
+:root{
+  --bg:#F2F5F8; --surface:#FFFFFF; --sunk:#E8EDF2; --ink:#14202C; --muted:#5A6878; --line:#D6DEE7; --sheet:#FFFFFF; --sheet-line:#1B2530;
+  --brand:#2B75BD; --brand-ink:#FFFFFF; --brand-soft:#E2EEFA; --price:#D8433D; --ok:#22774A; --ok-soft:#E0F1E7; --warn:#995A00; --warn-soft:#FBEED8; --danger:#C2362F;
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif; --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --r:8px; --shadow:0 10px 30px rgb(20 32 44/.18);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E141B; --surface:#151E28; --sunk:#1C2733; --ink:#E6EDF3; --muted:#94A4B6; --line:#2A3746; --sheet:#F7F9FB; --sheet-line:#2A3746;
+  --brand:#5EA3E6; --brand-ink:#0B1520; --brand-soft:#1B3047; --price:#FF7A73; --ok:#5CC98D; --ok-soft:#173326; --warn:#F0B35A; --warn-soft:#3A2A10; --danger:#FF7A73; --shadow:0 10px 30px rgb(0 0 0/.5); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E141B; --surface:#151E28; --sunk:#1C2733; --ink:#E6EDF3; --muted:#94A4B6; --line:#2A3746; --sheet:#F7F9FB; --sheet-line:#2A3746;
+  --brand:#5EA3E6; --brand-ink:#0B1520; --brand-soft:#1B3047; --price:#FF7A73; --ok:#5CC98D; --ok-soft:#173326; --warn:#F0B35A; --warn-soft:#3A2A10; --danger:#FF7A73; --shadow:0 10px 30px rgb(0 0 0/.5); color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 var(--f-body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:var(--bg);display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding-block:14px 12px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0}
+.brand h1{font:800 24px/1.05 var(--f-display);letter-spacing:-.01em;margin:0;color:var(--brand)}
+.brand .tagline{font-weight:600;font-size:12.5px;color:var(--ink);margin-top:3px}
+.brand .coaddr{font-size:11.5px;color:var(--muted);margin-top:1px}
+.brand small{color:var(--muted);font-size:11.5px;display:block;margin-top:3px}
+.tabs{display:flex;gap:3px;background:var(--sunk);padding:3px;border-radius:999px}
+.tabs button{border:0;background:transparent;padding:6px 14px;border-radius:999px;font-weight:600;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgb(0 0 0/.1)}
+.search{flex:1 1 220px;min-width:0;position:relative}
+.search input{width:100%;box-sizing:border-box;padding:8px 12px 8px 32px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.topbtns{display:flex;gap:6px;align-items:center}
+.status{font-size:12px;color:var(--muted);white-space:nowrap}
+.status.saving{color:var(--warn)} .status.err{color:var(--danger)}
+.btn{border:1px solid var(--line);background:var(--surface);padding:7px 12px;border-radius:var(--r);font-weight:600;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--brand)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn.danger{color:var(--danger);border-color:var(--danger)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.small{padding:4px 9px;font-size:12px}
+.layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px;margin-top:16px}
+.rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 74px);align-self:start;max-height:calc(100vh - 96px);overflow:auto;display:flex;flex-direction:column;gap:1px}
+.rail .cat{display:grid;grid-template-columns:26px 1fr auto;gap:6px;align-items:baseline;text-align:left;border:0;background:transparent;padding:7px 8px;border-radius:6px;cursor:pointer;color:var(--ink)}
+.rail .cat:hover{background:var(--sunk)}
+.rail .no{font:600 12px var(--f-mono);color:var(--muted)}
+.rail .ct{font:500 11px var(--f-mono);color:var(--muted)}
+.rail .cat[aria-current="true"]{background:var(--brand-soft)}
+.rail .cat[aria-current="true"] .no{color:var(--brand)}
+.railfoot{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.catpick{display:none}
+.dlbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;background:var(--brand-soft);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:12px}
+.dlbar b{font:700 15px var(--f-display);display:block}
+.dlbar small{color:var(--muted);font-size:12px}
+.dlacts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.sizepick{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.sizepick select{padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;min-width:0}
+.phead{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line)}
+.phead h2{font:700 24px/1.1 var(--f-display);margin:0;text-wrap:balance}
+.phead h2 .no{font:600 14px var(--f-mono);color:var(--brand);margin-right:8px;vertical-align:4px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--muted);font-size:12.5px;margin-top:6px;align-items:center}
+.meta input{width:96px;padding:2px 6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);font:500 12px var(--f-mono)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:6px 10px;font-weight:600;font-size:12.5px;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--brand-soft);color:var(--brand)}
+/* the sheet: looks like the printed catalog */
+.sheetwrap{padding:18px;background:var(--sunk);border-radius:0 0 12px 12px}
+.sheet{background:var(--sheet);color:#14202C;border:1px solid var(--sheet-line);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));box-shadow:0 1px 3px rgb(0 0 0/.08)}
+.cellbox{border-right:1px solid var(--sheet-line);border-bottom:1px solid var(--sheet-line);display:flex;min-height:250px;position:relative;background:#fff}
+.cellbox.dragging{opacity:.4}
+.cellbox.dropbefore::before{content:"";position:absolute;left:-3px;top:6px;bottom:6px;width:4px;border-radius:2px;background:var(--brand);z-index:2}
+.prod{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 6px 6px;border:0;background:transparent;cursor:pointer;text-align:center;color:#14202C;position:relative}
+.prod+.prod{border-left:1px dashed #C9D3DD}
+.prod:hover{background:#F2F7FC}
+.prod:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.prod .pcode{font:700 13px var(--f-display);color:#2B75BD}
+.prod .pname{font:600 11px/1.3 var(--f-body);color:#4A4A4A;min-height:2.6em;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.prod img{width:100%;height:130px;object-fit:contain;margin-block:auto}
+.prod .pfoot{width:100%;display:flex;justify-content:space-between;align-items:baseline;font-size:12px;margin-top:auto}
+.prod .pfoot b{font-weight:700}
+.prod .pprice{font:700 13px var(--f-mono);color:#D8433D}
+.prod.off{opacity:.38}
+.prod .hidden-chip{position:absolute;top:6px;right:6px;font:700 9.5px var(--f-body);letter-spacing:.05em;text-transform:uppercase;background:#14202C;color:#fff;padding:2px 6px;border-radius:999px}
+.grip{position:absolute;left:4px;top:4px;width:20px;height:20px;display:grid;place-items:center;color:#9AA7B4;cursor:grab;opacity:0;border-radius:4px}
+.cellbox:hover .grip{opacity:1}
+.addcell{border:2px dashed #B8C6D4;margin:10px;border-radius:10px;display:grid;place-items:center;gap:4px;color:#2B75BD;font-weight:700;cursor:pointer;background:transparent;min-height:228px;font-size:13px}
+.addcell span{font-size:30px;line-height:1}
+.addcell:hover{background:#EEF5FC}
+.sheetnote{color:var(--muted);font-size:12px;margin-top:10px;display:flex;flex-wrap:wrap;gap:4px 16px}
+/* list view */
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th{font:600 11px var(--f-body);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);background:var(--surface)}
+td{padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr.off td{opacity:.45}
+tr.clickable{cursor:pointer} tr.clickable:hover td{background:var(--bg)}
+tr.flash td{background:var(--brand-soft)}
+.thumb{width:44px;height:44px;border-radius:6px;background:#fff;border:1px solid var(--line);object-fit:contain;display:block}
+.code{font:600 13px var(--f-mono);color:var(--brand);white-space:nowrap}
+.money{font:600 13px var(--f-mono);color:var(--price);white-space:nowrap}
+.chip{display:inline-block;font:600 10.5px var(--f-body);letter-spacing:.03em;padding:2px 7px;border-radius:999px;white-space:nowrap}
+.chip.ok{background:var(--ok-soft);color:var(--ok)} .chip.warn{background:var(--warn-soft);color:var(--warn)} .chip.mute{background:var(--sunk);color:var(--muted)} .chip.brand{background:var(--brand-soft);color:var(--brand)}
+.cell{width:100%;box-sizing:border-box;border:1px solid transparent;background:transparent;border-radius:6px;padding:4px 6px}
+.cell:hover{border-color:var(--line)} .cell:focus{border-color:var(--brand);background:var(--bg);outline:none}
+.cell.num{width:70px;text-align:right;font:600 13px var(--f-mono);color:var(--price)}
+.toggle{width:34px;height:20px;appearance:none;background:var(--line);border-radius:999px;position:relative;cursor:pointer;flex:none;margin:0}
+.toggle::after{content:"";position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:2px;left:2px;transition:left .15s}
+.toggle:checked{background:var(--ok)} .toggle:checked::after{left:16px}
+.toggle:disabled{cursor:default}
+.empty{padding:40px 18px;text-align:center;color:var(--muted)}
+.banner{margin-top:14px;padding:10px 14px;border-radius:var(--r);background:var(--warn-soft);color:var(--warn);font-weight:500}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.filters select{padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.more{display:flex;justify-content:center;padding:12px}
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgb(10 18 26/.35);z-index:20}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100vw);background:var(--surface);z-index:21;box-shadow:var(--shadow);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px);transform:translateX(0);transition:transform .2s}
+.drawer header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+.drawer header h3{margin:0;font:700 18px var(--f-display)}
+.dbody{flex:1;overflow:auto;padding:16px 18px;display:flex;flex-direction:column;gap:14px}
+.dfoot{display:flex;gap:8px;justify-content:space-between;padding:12px 18px;border-top:1px solid var(--line);flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:var(--muted)}
+.field input,.field select,.field textarea{padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font-weight:400;font-size:14px}
+.field textarea{resize:vertical;min-height:56px}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--brand);outline:none}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pricebox{position:relative} .pricebox span{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--price);font:600 14px var(--f-mono)}
+.pricebox input{padding-left:22px!important;font:600 15px var(--f-mono)!important;color:var(--price)!important}
+.photo{display:flex;gap:12px;align-items:center}
+.photo img{width:96px;height:96px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:10px}
+.photo .ph{width:96px;height:96px;border:2px dashed var(--line);border-radius:10px;display:grid;place-items:center;color:var(--muted);font-size:11px;text-align:center}
+.switchrow{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;color:var(--ink)}
+.switchrow small{display:block;color:var(--muted);font-size:12px}
+.sync{font-size:12px;color:var(--muted);background:var(--bg);border-radius:8px;padding:8px 10px}
+.sync b{color:var(--ink)}
+.dmoves{display:flex;gap:6px;flex-wrap:wrap}
+/* toast & dialogs */
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 12px 10px 16px;border-radius:999px;font-weight:600;font-size:13px;z-index:30;box-shadow:var(--shadow);display:flex;gap:12px;align-items:center;max-width:calc(100vw - 40px)}
+.toast button{background:transparent;border:1px solid currentColor;color:inherit;border-radius:999px;padding:3px 10px;font-weight:700;cursor:pointer}
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);max-width:min(640px,calc(100vw - 32px));width:100%;padding:0;box-shadow:var(--shadow)}
+dialog::backdrop{background:rgb(10 18 26/.4)}
+.dlg{display:flex;flex-direction:column;gap:12px;padding:20px;max-height:80vh;overflow:auto}
+.dlg h3{margin:0;font:700 20px var(--f-display)}
+.dlg p,.dlg li{color:var(--ink);font-size:13.5px;line-height:1.55}
+.dlg ol{padding-left:20px;margin:0;display:flex;flex-direction:column;gap:6px}
+.dlg h4{margin:6px 0 0;font:700 14px var(--f-display);color:var(--brand)}
+.dlgfoot{display:flex;gap:8px;justify-content:flex-end}
+.preview{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.preview table td,.preview table th{padding:4px 8px;font-size:12.5px}
+.hist{display:flex;flex-direction:column}
+.hist div{padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.hist small{color:var(--muted);display:block;font-size:11.5px}
+.progress{position:fixed;left:50%;bottom:calc(70px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--brand);color:var(--brand-ink);padding:9px 16px;border-radius:999px;font-weight:600;font-size:13px;z-index:29;box-shadow:var(--shadow)}
+@media (max-width:1100px){.sheet{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:860px){
+  .layout{grid-template-columns:minmax(0,1fr)} .rail{display:none}
+  .catpick{display:block;width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);margin-bottom:12px}
+  .sheet{grid-template-columns:repeat(2,minmax(0,1fr))} .hide-sm{display:none} .sheetwrap{padding:10px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="top">
+  <div class="brand"><div><h1 id="coname">Tick Tock Inc.</h1><div class="tagline" id="cotag">Importers &amp; Distributors of General Merchandise — Est. 1987</div><div class="coaddr" id="coaddr">240 Moonachie Ave. Suite 400, Moonachie, NJ 07074 | Phone: 201-853-9200 | Fax: 201-853-9477 | Email: tiktok@att.net</div><small id="totals">Loading price book…</small></div></div>
+  <div class="tabs" role="tablist" hidden><button role="tab" id="tab-cat" aria-selected="true">Catalogs</button><button role="tab" id="tab-web" aria-selected="false" hidden>Website list</button></div>
+  <label class="search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="q" type="search" placeholder="Search item # or name across everything" autocomplete="off"></label>
+  <div class="topbtns"><span class="status" id="status"></span><button class="btn small" id="unlockbtn">Unlock editing</button><button class="btn small" id="histbtn">Recent changes</button><button class="btn small" id="helpbtn">How to use</button></div>
+</header>
+<div id="banner" class="banner" hidden></div>
+
+<main id="view-cat" class="layout">
+  <nav class="rail" id="rail" aria-label="Catalogs"></nav>
+  <section style="min-width:0"><div class="dlbar" id="dlbar"></div><select id="catpick" class="catpick" aria-label="Choose catalog"></select><div class="panel" id="catpanel"><div class="empty">Loading catalogs…</div></div></section>
+</main>
+
+<main id="view-web" hidden style="margin-top:16px"><div class="panel">
+  <div class="phead"><div><h2>ticktockinc.com list</h2><div class="meta"><span id="webcount"></span><span>Prices here and in the catalogs stay in sync by item #.</span></div></div>
+    <div class="actions"><div class="filters"><select id="fcat" aria-label="Category"><option value="">All categories</option></select>
+      <select id="fstock" aria-label="Stock"><option value="">Any stock</option><option value="yes">In stock</option><option value="no">Out of stock</option><option value="deleted">Deleted</option></select></div>
+      <button class="btn primary" id="xlsx">Download website sheet</button></div></div>
+  <div class="tablewrap"><table><thead><tr><th>Item #</th><th>Description</th><th class="hide-sm">Category</th><th>Packing</th><th>Price</th><th class="hide-sm">Old price</th><th>In stock</th><th>Deleted</th><th class="hide-sm">Catalog</th></tr></thead><tbody id="webbody"></tbody></table></div>
+  <div class="more" id="webmore" hidden><button class="btn" id="webmorebtn">Show more</button></div>
+</div></main>
+
+<div id="drawerRoot"></div>
+<div class="toast" id="toast" hidden></div>
+<div class="progress" id="progress" hidden></div>
+
+<dialog id="bulkDlg"><div class="dlg">
+  <h3>Change prices</h3>
+  <p id="bulkScope"></p>
+  <div class="row2">
+    <label class="field">Change by<select id="b-mode"><option value="amt">Dollar amount ($)</option><option value="pct">Percent (%)</option></select></label>
+    <label class="field">Amount (use − to lower)<input id="b-amt" inputmode="decimal" placeholder="5"></label>
+  </div>
+  <p style="margin:0;color:var(--muted);font-size:12.5px">Prices are never rounded up or down to 5¢ or $1. A dollar change is exact ($0.95 + $0.10 = $1.05). A percent change keeps whole cents only.</p>
+  <label class="field">Apply to<select id="b-which"><option value="shown">Products shown in the PDF</option><option value="all">All products, including hidden</option></select></label>
+  <div class="preview" id="b-preview"></div>
+  <div class="dlgfoot"><button class="btn" id="b-cancel">Cancel</button><button class="btn primary" id="b-apply" disabled>Apply</button></div>
+</div></dialog>
+
+<dialog id="settingsDlg"><div class="dlg">
+  <h3>PDF header and footer</h3>
+  <label class="field">Company name<input id="s-company"></label>
+  <label class="field">Tagline<input id="s-tagline"></label>
+  <label class="field">Address line<input id="s-address"></label>
+  <label class="field">Footer, bold part<input id="s-footerBold"></label>
+  <label class="field">Footer text ({date} becomes the catalog's prices-as-of date)<input id="s-footerText"></label>
+  <div class="dlgfoot"><button class="btn" id="s-cancel">Cancel</button><button class="btn primary" id="s-save">Save</button></div>
+</div></dialog>
+
+<dialog id="histDlg"><div class="dlg"><h3>Recent changes</h3><div class="hist" id="histList"></div><div class="dlgfoot"><button class="btn" id="h-close">Close</button></div></div></dialog>
+
+<dialog id="helpDlg"><div class="dlg">
+  <h3>How to use this catalog</h3>
+  <h4>Every day</h4>
+  <ol>
+    <li><b>Change a price:</b> open the catalog, click the product, type the new price, Save. The same item # updates in every catalog and on the website list, and the catalog's "prices as of" date becomes today.</li>
+    <li><b>Add a product:</b> click the dashed <b>+ Add product</b> box at the end of the sheet (or <b>Add product</b> at the top). Fill item #, name, pack, price, add a photo, choose where it goes, Save.</li>
+    <li><b>Two products in one box:</b> open the second product and turn on <b>Share a box with the product before</b>. They print side by side, like Bic Classic and Sensitive.</li>
+    <li><b>Hide or remove:</b> turn off <b>Show in PDF</b> to hide it but keep it for later. Use <b>Delete</b> only when it is gone for good.</li>
+    <li><b>Reorder:</b> drag a box by its corner handle, or use Move earlier / later in the product panel.</li>
+    <li><b>Many prices at once:</b> <b>Change prices</b> raises or lowers a whole catalog by a percent or dollar amount, with a preview first.</li>
+    <li><b>Made a mistake?</b> Click <b>Undo</b> on the message at the bottom right after a change.</li>
+  </ol>
+  <h4>Getting files out</h4>
+  <ol>
+    <li><b>Download PDF</b> (top right of each catalog) gives that one catalog. In the blue <b>Send to customers</b> bar, <b>Full catalog, one PDF</b> gives every catalog in one file, and <b>All 25 PDFs (.zip)</b> gives them as separate files.</li>
+    <li><b>Website list → Download website sheet</b> gives ticktockinc.com.xlsx in the same format as before. Upload it to the website as usual.</li>
+  </ol>
+  <h4>Sending to customers on WhatsApp</h4>
+  <ol>
+    <li>Keep <b>File size</b> on <b>Small, for WhatsApp</b> in the blue <b>Send to customers</b> bar at the top of the Catalogs tab. Photos still look sharp on a phone and the files are a fraction of the old size. Switch to Large only for printing.</li>
+    <li>Click <b>Full catalog, one PDF</b>. You get one file with every catalog and a contents page; customers tap a category to jump to it.</li>
+    <li>Send that one file on WhatsApp, or a single catalog's PDF when a customer asks for one category.</li>
+    <li>To reach many customers at once, use a <b>broadcast list</b> in the WhatsApp Business app (up to 256 people per list; they must have your number saved).</li>
+  </ol>
+  <h4>Using it as a team</h4>
+  <ol>
+    <li>Use the <b>Share</b> button on this page to invite people from the company.</li>
+    <li>People with <b>edit</b> access can change prices and photos. People with <b>view</b> access can search, look up prices on a call and download PDFs, but cannot change anything.</li>
+    <li>Everyone sees changes live. <b>Recent changes</b> shows who changed what and when.</li>
+    <li>Keep one person in charge of uploading the website sheet so the site and the catalogs stay the same.</li>
+  </ol>
+  <div class="dlgfoot"><button class="btn primary" id="help-close">Got it</button></div>
+</div></dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s??'').replace(/\s+/g,'').toUpperCase();
+const syncable=k=>/\d/.test(k);
+const money=n=>(n===''||n==null||isNaN(Number(n)))?'':Number(n).toFixed(2);
+const today=()=>{const d=new Date();return String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0')+'/'+d.getFullYear()};
+const uid=()=>'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const parsePrice=v=>{const t=String(v).replace(/[$,\s]/g,'');if(!/^\d*(\.\d{1,2})?$/.test(t)||t===''||t==='.')return null;return Number(Number(t).toFixed(2))};
+
+const S={db:null,assets:null,downloads:null,user:null,me:null,canWrite:true,cats:{},web:{},settings:{},current:null,tab:'cat',view:'sheet',q:'',webShown:200,edit:null,undo:[],history:[],names:{}};
+try{S.view=localStorage.getItem('ttc-view')||'sheet';S.quality=localStorage.getItem('ttc-quality')||'small'}catch(e){S.quality='small'}
+
+/* ---------- photos ---------- */
+const extraPhotos={};
+const photoUrl=it=>it.photoId?('/_blob/'+it.photoId):(extraPhotos[it.photo]||it.photo||'');
+
+
+/* ---------- saving ---------- */
+const queues={};let inflight=0;
+function setStatus(t,cls){const el=$('#status');el.textContent=t;el.className='status '+(cls||'')}
+let persistTimer=null;
+function save(path,data){
+  if(!S.canWrite)return;
+  inflight++;setStatus('Saving…','saving');clearTimeout(persistTimer);
+  persistTimer=setTimeout(async()=>{
+    const n=inflight;
+    try{
+      const r=await fetch('/api/catalog',{method:'PUT',headers:{'content-type':'application/json','x-edit-password':localStorage.getItem('adc-pw')||''},body:JSON.stringify({catalog:S.cats['adult-day-care'],settings:S.settings,history:S.history})});
+      if(r.status===401){S.canWrite=false;setStatus('Password not accepted. Tap Unlock editing.','err');render()}
+      else if(!r.ok)throw new Error('save failed');
+      else setStatus('All changes saved');
+    }catch(e){setStatus('Not saved. Check your connection and try again.','err')}
+    inflight=Math.max(0,inflight-n);
+  },500);
+}
+/* Every change: snapshot → mutate → commit. commit saves only the documents that changed, and keeps an undo step. */
+function snapshot(){const s={cats:{},web:{}};for(const k in S.cats)s.cats[k]=JSON.stringify(S.cats[k]);for(const k in S.web)s.web[k]=JSON.stringify(S.web[k]);return s}
+function commit(before,label,catSlug){
+  const now=new Date().toISOString();let n=0;
+  for(const k in S.cats){if(JSON.stringify(S.cats[k])!==before.cats[k]){S.cats[k].updatedAt=now;save('catalogs/'+k,{items:S.cats[k].items,asOf:S.cats[k].asOf||'',updatedAt:now});n++}}
+  for(const k in S.web){if(JSON.stringify(S.web[k])!==before.web[k]){save('web/'+k,{rows:S.web[k].rows});n++}}
+  if(!n)return;
+  S.undo.push({before,label});if(S.undo.length>20)S.undo.shift();
+  logHistory(label,catSlug);toast(label,true);render();
+}
+function undo(){
+  const u=S.undo.pop();if(!u)return;const cur=snapshot();
+  for(const k in u.before.cats)S.cats[k]=JSON.parse(u.before.cats[k]);for(const k in u.before.web)S.web[k]=JSON.parse(u.before.web[k]);
+  for(const k in S.cats)if(JSON.stringify(S.cats[k])!==cur.cats[k])save('catalogs/'+k,{items:S.cats[k].items,asOf:S.cats[k].asOf||'',updatedAt:new Date().toISOString()});
+  for(const k in S.web)if(JSON.stringify(S.web[k])!==cur.web[k])save('web/'+k,{rows:S.web[k].rows});
+  logHistory('Undid: '+u.label);toast('Undone: '+u.label,false);render();
+}
+let toastTimer;
+function toast(text,canUndo){const t=$('#toast');t.innerHTML=`<span>${esc(text)}</span>${canUndo&&S.canWrite?'<button id="undoBtn">Undo</button>':''}`;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.hidden=true,7000)}
+function logHistory(text,cat){if(!S.canWrite)return;S.history.unshift({at:new Date().toISOString(),by:'',text,catalog:cat||''});S.history=S.history.slice(0,60);save('history',{})}
+
+/* ---------- sync by item # ---------- */
+function webIndex(){const m={};for(const p in S.web)S.web[p].rows.forEach((r,i)=>{const k=norm(r.k);(m[k]=m[k]||[]).push([p,i])});return m}
+function catIndex(){const m={};for(const s in S.cats)S.cats[s].items.forEach((it,i)=>{const k=norm(it.item);(m[k]=m[k]||[]).push([s,i])});return m}
+function setPriceEverywhere(code,price){
+  const k=norm(code);if(!syncable(k))return[];const where=new Set();
+  (catIndex()[k]||[]).forEach(([s,i])=>{if(S.cats[s].items[i].price!==price){S.cats[s].items[i].price=price;S.cats[s].asOf=today();where.add(S.cats[s].title)}});
+  (webIndex()[k]||[]).forEach(([p,i])=>{if(S.web[p].rows[i].pr!==price){S.web[p].rows[i].pr=price;where.add('website')}});
+  return[...where];
+}
+function setPackOnWeb(code,pack){const k=norm(code),n=parseInt(pack,10);if(!syncable(k)||isNaN(n))return;(webIndex()[k]||[]).forEach(([p,i])=>{S.web[p].rows[i].p=n})}
+
+/* ---------- catalog helpers ---------- */
+const catList=()=>Object.entries(S.cats).sort((a,b)=>a[1].order-b[1].order);
+const cur=()=>S.cats[S.current];
+function cellsOf(items,activeOnly){const cells=[];items.forEach(it=>{if(activeOnly&&!it.active)return;if(it.pair&&cells.length&&!(activeOnly&&false))cells[cells.length-1].push(it);else cells.push([it])});return cells}
+function matches(it){if(!S.q)return true;const q=S.q.toLowerCase();return norm(it.item).toLowerCase().includes(norm(q).toLowerCase())||String(it.name).toLowerCase().includes(q)}
+
+/* ---------- rendering ---------- */
+function render(){
+  const ub=$('#unlockbtn');if(ub)ub.hidden=!!S.canWrite;
+  const L=catList(),tot=L.reduce((n,[,c])=>n+c.items.length,0),wtot=Object.values(S.web).reduce((n,w)=>n+w.rows.length,0);
+  if(S.settings.company){$('#coname').textContent=S.settings.company;$('#cotag').textContent=S.settings.tagline||'';$('#coaddr').textContent=S.settings.address||''}
+  $('#totals').textContent=L.length?`${tot} products`:'Loading catalog…';
+  $('#view-cat').hidden=S.tab!=='cat';$('#view-web').hidden=S.tab!=='web';
+  $('#tab-cat').setAttribute('aria-selected',S.tab==='cat');$('#tab-web').setAttribute('aria-selected',S.tab==='web');
+  if(S.tab==='cat'){renderRail();renderCatalog()}else renderWeb();
+  renderDrawer();
+}
+function renderRail(){
+  const L=catList();
+  $('#rail').innerHTML=L.map(([s,c])=>`<button class="cat" data-slug="${s}" aria-current="${s===S.current}"><span class="no">${esc(c.number)}</span><span>${esc(c.title)}</span><span class="ct">${c.items.filter(i=>i.active).length}</span></button>`).join('')+
+    `<div class="railfoot"><button class="btn ghost" id="setbtn">PDF header &amp; footer</button></div>`;
+  $('#dlbar').innerHTML=`<div><b>PDF for customers</b><small>Edit prices and photos, then tap Download PDF</small></div><div class="dlacts"><label class="sizepick">File size <select id="quality"><option value="small" ${S.quality!=='print'?'selected':''}>Small, for WhatsApp</option><option value="print" ${S.quality==='print'?'selected':''}>Large, for printing</option></select></label></div>`;
+  $('#catpick').innerHTML=L.map(([s,c])=>`<option value="${s}" ${s===S.current?'selected':''}>${esc(c.number+' · '+c.title)} (${c.items.length})</option>`).join('');
+}
+function renderCatalog(){
+  const panel=$('#catpanel');if(!S.db)return;
+  const L=catList();if(!L.length){panel.innerHTML='<div class="empty">The catalog appears here as soon as it loads.</div>';return}
+  if(S.q)return renderSearch();
+  if(!S.cats[S.current])S.current=L[0][0];
+  const c=cur(),ro=!S.canWrite,shown=c.items.filter(i=>i.active).length,pairs=c.items.filter(i=>i.pair).length;
+  let body='';
+  if(S.view==='sheet'){
+    const cells=cellsOf(c.items,false);
+    body=`<div class="sheetwrap"><div class="sheet" id="sheet">${cells.map((cell,ci)=>`<div class="cellbox" data-cell="${ci}" ${ro?'':'draggable="true"'}>${ro?'':'<span class="grip" title="Drag to move">⋮⋮</span>'}${cell.map(it=>`
+        <button class="prod ${it.active?'':'off'}" data-id="${it.id}" title="Edit ${esc(it.item)}">${it.active?'':'<span class="hidden-chip">Hidden</span>'}
+          <span class="pcode">${esc(it.item)}</span><span class="pname">${esc(it.name)}</span>
+          ${photoUrl(it)?`<img src="${esc(photoUrl(it))}" alt="" loading="lazy">`:'<span style="margin:auto;color:#8995A3;font-size:11px">No photo</span>'}
+          <span class="pfoot"><span><b>${esc(String(it.pack).split('/')[0])}</b>${String(it.pack).includes('/')?'/'+esc(String(it.pack).split('/').slice(1).join('/')):''}</span><span class="pprice">$${money(it.price)}</span></span></button>`).join('')}</div>`).join('')}
+        ${ro?'':'<button class="addcell" id="addcell"><span>+</span>Add product</button>'}</div>
+      <div class="sheetnote"><span>Click any product to edit it.</span>${ro?'':'<span>Drag a box by its corner to move it.</span>'}<span>${pairs} boxes hold two products.</span></div></div>`;
+  }else{
+    const wi=webIndex();
+    body=`<div class="tablewrap"><table><thead><tr><th>Photo</th><th>Item #</th><th>Name</th><th>Pack</th><th>Price</th><th>In PDF</th><th class="hide-sm">Box</th><th class="hide-sm">Website</th></tr></thead><tbody>${c.items.map(it=>`
+      <tr class="clickable ${it.active?'':'off'}" data-id="${it.id}"><td><img class="thumb" src="${esc(photoUrl(it))}" alt="" loading="lazy"></td><td class="code">${esc(it.item)}</td><td>${esc(it.name)}</td><td>${esc(it.pack)}</td>
+      <td>${ro?`<span class="money">$${money(it.price)}</span>`:`<input class="cell num" data-qp="${it.id}" value="${money(it.price)}" inputmode="decimal" aria-label="Price for ${esc(it.item)}">`}</td>
+      <td>${it.active?'<span class="chip ok">Shown</span>':'<span class="chip mute">Hidden</span>'}</td><td class="hide-sm">${it.pair?'<span class="chip brand">Shares box</span>':''}</td>
+      <td class="hide-sm">${syncable(norm(it.item))&&wi[norm(it.item)]?'<span class="chip ok">On website</span>':'<span class="chip warn">Not on website</span>'}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+  panel.innerHTML=`<div class="phead"><div><h2><span class="no">${esc(c.number)}</span>${esc(c.title)}</h2>
+    <div class="meta"><span>${shown} of ${c.items.length} shown in the PDF</span><label>Prices as of <input id="asof" value="${esc(c.asOf||'')}" ${ro?'disabled':''}></label>
+    ${c.updatedAt?`<span>Edited ${new Date(c.updatedAt).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</span>`:''}</div></div>
+    <div class="actions"><div class="seg" role="group" aria-label="View"><button data-view="sheet" aria-pressed="${S.view==='sheet'}">Sheet</button><button data-view="list" aria-pressed="${S.view==='list'}">List</button></div>
+    ${ro?'':'<button class="btn" id="addbtn">Add product</button><button class="btn" id="bulkbtn">Change prices</button>'}<button class="btn primary" id="pdfbtn">Download PDF</button></div></div>${body}`;
+}
+function renderSearch(){
+  const hits=[];for(const [s,c] of catList())c.items.forEach(it=>{if(matches(it))hits.push([s,c,it])});
+  let wh=0;for(const p in S.web)S.web[p].rows.forEach(r=>{if(matches({item:r.k,name:r.n}))wh++});
+  $('#catpanel').innerHTML=`<div class="phead"><div><h2>Search: “${esc(S.q)}”</h2><div class="meta"><span>${hits.length} in the catalogs · ${wh} on the website list</span></div></div></div>
+   <div class="tablewrap"><table><thead><tr><th>Photo</th><th>Item #</th><th>Name</th><th>Pack</th><th>Price</th><th>Catalog</th></tr></thead><tbody>
+   ${hits.slice(0,150).map(([s,c,it])=>`<tr class="clickable ${it.active?'':'off'}" data-open="${s}" data-id="${it.id}"><td><img class="thumb" src="${esc(photoUrl(it))}" alt="" loading="lazy"></td><td class="code">${esc(it.item)}</td><td>${esc(it.name)}</td><td>${esc(it.pack)}</td><td class="money">$${money(it.price)}</td><td><span class="chip brand">${esc(c.number+' '+c.title)}</span></td></tr>`).join('')||'<tr><td colspan="6" class="empty">Nothing in the catalogs matches. Try the Website list tab.</td></tr>'}
+   </tbody></table></div>`;
+}
+function renderWeb(){
+  const sel=$('#fcat');if(sel.options.length<2){const cs=new Set();for(const p in S.web)S.web[p].rows.forEach(r=>r.c&&cs.add(r.c.trim()));[...cs].sort().forEach(c=>sel.add(new Option(c,c)))}
+  const fc=sel.value,fs=$('#fstock').value,ci=catIndex(),ro=!S.canWrite?'disabled':'';
+  const all=[];Object.keys(S.web).sort((a,b)=>S.web[a].part-S.web[b].part).forEach(p=>S.web[p].rows.forEach((r,i)=>all.push([p,i,r])));
+  const f=all.filter(([,,r])=>(!fc||r.c.trim()===fc)&&(!fs||(fs==='deleted'?r.dl==='yes':(r.st===fs&&r.dl!=='yes')))&&matches({item:r.k,name:r.n}));
+  $('#webcount').textContent=`${f.length} of ${all.length} items`;
+  $('#webbody').innerHTML=f.slice(0,S.webShown).map(([p,i,r])=>{const inC=syncable(norm(r.k))&&ci[norm(r.k)];const cn=inC?S.cats[inC[0][0]]:null;
+    return `<tr data-part="${p}" data-i="${i}" class="${r.dl==='yes'?'off':''}"><td class="code">${esc(r.k)}</td><td>${esc(r.n)}</td><td class="hide-sm"><span class="chip mute">${esc(r.c)}${r.s?' · '+esc(r.s):''}</span></td>
+    <td><input class="cell" data-w="p" value="${esc(r.p)}" ${ro} aria-label="Packing" style="width:56px"></td>
+    <td><input class="cell num" data-w="pr" inputmode="decimal" value="${money(r.pr)}" ${ro} aria-label="Price"></td>
+    <td class="hide-sm" style="color:var(--muted);font-family:var(--f-mono)">${r.p2===''?'':'$'+money(r.p2)}</td>
+    <td><input type="checkbox" class="toggle" data-w="st" ${r.st==='yes'?'checked':''} ${ro} aria-label="In stock"></td>
+    <td><input type="checkbox" class="toggle" data-w="dl" ${r.dl==='yes'?'checked':''} ${ro} aria-label="Deleted"></td>
+    <td class="hide-sm">${cn?`<span class="chip ok">${esc(cn.number+' '+cn.title)}</span>`:''}</td></tr>`}).join('')||'<tr><td colspan="9" class="empty">No website items match.</td></tr>';
+  $('#webmore').hidden=f.length<=S.webShown;
+}
+
+/* ---------- product drawer ---------- */
+function openEditor(id){
+  const c=cur();if(id){const it=c.items.find(x=>x.id===id);if(!it)return;S.edit={id,draft:{...it},pos:c.items.indexOf(it),photo:null,confirmDel:false}}
+  else S.edit={id:null,draft:{id:uid(),item:'',name:'',pack:'12/cs',price:'',active:true,pair:false,photo:''},pos:c.items.length,photo:null,confirmDel:false};
+  renderDrawer();setTimeout(()=>$('#d-'+(id?'price':'item'))?.focus(),30);
+}
+function closeEditor(){S.edit=null;renderDrawer()}
+function renderDrawer(){
+  const root=$('#drawerRoot');const E=S.edit;if(!E){root.innerHTML='';return}
+  const c=cur(),d=E.draft,ro=!S.canWrite,isNew=!E.id;
+  const k=norm(d.item);const wi=syncable(k)?(webIndex()[k]||[]):[];const others=syncable(k)?(catIndex()[k]||[]).filter(([s,i])=>!(s===S.current&&c.items[i]?.id===d.id)):[];
+  const img=E.photo?E.photo.url:photoUrl(d);
+  root.innerHTML=`<div class="scrim" id="scrim"></div><aside class="drawer" role="dialog" aria-label="${isNew?'Add product':'Edit product'}">
+    <header><h3>${isNew?'Add product to '+esc(c.title):'Edit '+esc(d.item)}</h3><button class="btn ghost" id="d-close" aria-label="Close">✕</button></header>
+    <div class="dbody">
+      <div class="photo">${img?`<img src="${esc(img)}" alt="">`:'<div class="ph">No photo yet</div>'}
+        <div style="display:flex;flex-direction:column;gap:6px"><label class="btn small" style="cursor:pointer" ${ro||!S.assets?'hidden':''}>${img?'Replace photo':'Add photo'}<input type="file" id="d-photo" accept="image/*" hidden></label>
+        <small style="color:var(--muted);font-size:11.5px">${S.assets?'JPG or PNG. Square-ish photos on white look best.':'Only editors can change photos.'}</small></div></div>
+      <div class="row2"><label class="field">Item #<input id="d-item" value="${esc(d.item)}" placeholder="J 90" ${ro?'disabled':''}></label>
+        <label class="field">Pack<input id="d-pack" value="${esc(d.pack)}" placeholder="12/cs" ${ro?'disabled':''}></label></div>
+      <label class="field">Product name<textarea id="d-name" rows="2" placeholder="Lucky Liquid Hand Soap 14 fl oz Lavender" ${ro?'disabled':''}>${esc(d.name)}</textarea></label>
+      <label class="field">Price<div class="pricebox"><span>$</span><input id="d-price" inputmode="decimal" value="${money(d.price)}" placeholder="1.00" ${ro?'disabled':''}></div></label>
+      ${!isNew&&(wi.length||others.length)?`<div class="sync">A new price also updates <b>${[...others.map(([s])=>S.cats[s].title),...(wi.length?['the website list']:[])].filter((v,i,a)=>a.indexOf(v)===i).join(', ')}</b>.</div>`:''}
+      ${!isNew&&syncable(k)&&!wi.length?'<div class="sync">This item # is not on the website list.</div>':''}
+      <label class="switchrow"><input type="checkbox" class="toggle" id="d-active" ${d.active?'checked':''} ${ro?'disabled':''}><span>Show in PDF<small>Turn off to hide it without deleting it.</small></span></label>
+      <label class="switchrow"><input type="checkbox" class="toggle" id="d-pair" ${d.pair?'checked':''} ${ro||E.pos===0?'disabled':''}><span>Share a box with the product before<small>Prints both side by side in one box, like Bic Classic and Sensitive.</small></span></label>
+      ${isNew?`<label class="field">Put it after<select id="d-after"><option value="-1">At the start</option>${c.items.map((it,i)=>`<option value="${i}" ${i===c.items.length-1?'selected':''}>${esc(it.item)} · ${esc(it.name.slice(0,42))}</option>`).join('')}</select></label>`:
+        (ro?'':`<div class="field">Position<div class="dmoves"><button class="btn small" id="d-up" ${E.pos===0?'disabled':''}>Move earlier</button><button class="btn small" id="d-down" ${E.pos>=c.items.length-1?'disabled':''}>Move later</button><button class="btn small" id="d-dup">Duplicate</button></div></div>`)}
+      <span class="status err" id="d-msg"></span>
+    </div>
+    <div class="dfoot">${!isNew&&!ro?(E.confirmDel?`<span style="display:flex;gap:6px;align-items:center"><button class="btn danger" id="d-delyes">Delete ${esc(d.item)}</button><button class="btn" id="d-delno">Keep</button></span>`:'<button class="btn danger" id="d-del">Delete</button>'):'<span></span>'}
+      <span style="display:flex;gap:8px"><button class="btn" id="d-cancel">${ro?'Close':'Cancel'}</button>${ro?'':`<button class="btn primary" id="d-save">${isNew?'Add product':'Save'}</button>`}</span></div>
+  </aside>`;
+}
+function readDraft(){const E=S.edit,d=E.draft;d.item=$('#d-item').value.trim();d.pack=$('#d-pack').value.trim();d.name=$('#d-name').value.trim().replace(/\s+/g,' ');d.price=$('#d-price').value;d.active=$('#d-active').checked;d.pair=$('#d-pair').checked;return d}
+async function saveEditor(){
+  const E=S.edit,c=cur(),d=readDraft(),msg=$('#d-msg');
+  if(!d.item){msg.textContent='Add the item #.';return} if(!d.name){msg.textContent='Add the product name.';return}
+  const price=parsePrice(d.price);if(price==null){msg.textContent='Type the exact price with up to 2 decimals, like 0.95.';return}
+  if(E.photo){
+    if(!S.assets){msg.textContent='Only editors can add photos.';return}
+    msg.textContent='Uploading photo…';msg.className='status saving';
+    try{const r=await S.assets.upload(E.photo.file);d.photo=r.url}catch(err){msg.className='status err';msg.textContent='The photo did not upload. Try a JPG or PNG under 20 MB.';return}
+  }
+  const before=snapshot();
+  const item={id:d.id,item:d.item,name:d.name,pack:d.pack,price,active:d.active,pair:d.pair,photo:d.photo||''};if(d.photoId)item.photoId=d.photoId;
+  let label;
+  if(!E.id){const after=Number($('#d-after').value);if(after<0)item.pair=false;c.items.splice(after+1,0,item);label=`Added ${item.item} to ${c.title}`}
+  else{const i=c.items.findIndex(x=>x.id===E.id);const old=c.items[i];c.items[i]=item;if(i===0)item.pair=false;
+    const ch=[];if(old.price!==price)ch.push(`$${money(old.price)} → $${money(price)}`);if(old.name!==item.name)ch.push('name');if(old.pack!==item.pack)ch.push('pack');if(old.item!==item.item)ch.push('item #');if(old.active!==item.active)ch.push(item.active?'shown':'hidden');if(!!old.pair!==!!item.pair)ch.push(item.pair?'shares a box':'own box');if(d.photo!==old.photo)ch.push('new photo');
+    label=`${item.item}: ${ch.join(', ')||'saved'}`}
+  c.asOf=today();
+  const where=setPriceEverywhere(item.item,price);setPackOnWeb(item.item,item.pack);
+  if(where.filter(w=>w!==c.title).length)label+=` (also ${where.filter(w=>w!==c.title).join(', ')})`;
+  S.edit=null;commit(before,label,S.current);
+  setTimeout(()=>{const el=document.querySelector(`[data-id="${item.id}"]`);if(el){el.scrollIntoView({block:'center',behavior:'smooth'});el.classList?.add('flash')}},50);
+}
+function moveInDrawer(dir){
+  const E=S.edit,c=cur(),i=c.items.findIndex(x=>x.id===E.id),j=i+dir;if(j<0||j>=c.items.length)return;
+  const before=snapshot();[c.items[i],c.items[j]]=[c.items[j],c.items[i]];if(c.items[0])c.items[0].pair=false;E.pos=j;commit(before,`Moved ${E.draft.item} ${dir<0?'earlier':'later'}`,S.current);
+}
+
+/* ---------- bulk price change ---------- */
+function bulkRows(){
+  const c=cur(),mode=$('#b-mode').value,amt=Number(String($('#b-amt').value).replace(/[,\s$%]/g,'')),which=$('#b-which').value;
+  if(!$('#b-amt').value.trim()||isNaN(amt))return null;
+  return c.items.filter(it=>which==='all'||it.active).map(it=>{let n=mode==='pct'?it.price*(1+amt/100):it.price+amt;n=Math.max(0,Number(n.toFixed(2)));return[it,n]}).filter(([it,n])=>n!==it.price);
+}
+function bulkPreview(){const r=bulkRows();$('#b-apply').disabled=!r||!r.length;
+  $('#b-preview').innerHTML=!r?'<div class="empty" style="padding:16px">Type an amount to see the new prices.</div>':!r.length?'<div class="empty" style="padding:16px">No prices would change.</div>':
+  `<table><thead><tr><th>Item #</th><th>Name</th><th>Now</th><th>New</th></tr></thead><tbody>${r.map(([it,n])=>`<tr><td class="code">${esc(it.item)}</td><td>${esc(it.name.slice(0,40))}</td><td class="money" style="color:var(--muted)">$${money(it.price)}</td><td class="money">$${money(n)}</td></tr>`).join('')}</tbody></table>`;
+  $('#b-apply').textContent=r&&r.length?`Change ${r.length} prices`:'Apply'}
+function bulkApply(){const r=bulkRows();if(!r||!r.length)return;const before=snapshot();r.forEach(([it,n])=>{it.price=n;setPriceEverywhere(it.item,n)});cur().asOf=today();$('#bulkDlg').close();commit(before,`Changed ${r.length} prices in ${cur().title}`,S.current)}
+
+/* ---------- drag to reorder (sheet view) ---------- */
+let dragCell=null;
+document.addEventListener('dragstart',e=>{const b=e.target.closest?.('.cellbox');if(!b||!S.canWrite)return;dragCell=Number(b.dataset.cell);b.classList.add('dragging');e.dataTransfer.effectAllowed='move';try{e.dataTransfer.setData('text/plain',String(dragCell))}catch(_){}});
+document.addEventListener('dragover',e=>{const b=e.target.closest?.('.cellbox');if(dragCell==null||!b)return;e.preventDefault();document.querySelectorAll('.dropbefore').forEach(x=>x.classList.remove('dropbefore'));b.classList.add('dropbefore')});
+document.addEventListener('dragend',()=>{dragCell=null;document.querySelectorAll('.dropbefore,.dragging').forEach(x=>x.classList.remove('dropbefore','dragging'))});
+document.addEventListener('drop',e=>{const b=e.target.closest?.('.cellbox');if(dragCell==null||!b)return;e.preventDefault();const to=Number(b.dataset.cell),from=dragCell;dragCell=null;if(to===from)return render();
+  const c=cur(),cells=cellsOf(c.items,false),moving=cells.splice(from,1)[0];cells.splice(to>from?to-1:to,0,moving);const before=snapshot();
+  c.items=cells.flatMap(cell=>cell.map((it,k)=>({...it,pair:k>0})));commit(before,`Moved ${moving[0].item}`,S.current)});
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{
+  if(e.target.id==='scrim'){closeEditor();return}
+  const row=e.target.closest('tr.clickable');
+  if(row&&!e.target.closest('input')){if(row.dataset.open){S.q='';$('#q').value='';S.current=row.dataset.open;render()}openEditor(row.dataset.id);return}
+  const t=e.target.closest('button');if(!t)return;
+  if(t.id==='unlockbtn'){unlock();return}
+  if(t.id==='undoBtn'){undo();$('#toast').hidden=true;return}
+  if(t.id==='tab-cat'||t.id==='tab-web'){S.tab=t.id==='tab-cat'?'cat':'web';render();return}
+  if(t.dataset.slug){S.current=t.dataset.slug;S.edit=null;render();window.scrollTo({top:0});return}
+  if(t.dataset.view){S.view=t.dataset.view;try{localStorage.setItem('ttc-view',S.view)}catch(_){}render();return}
+  if(t.classList.contains('prod')){openEditor(t.dataset.id);return}
+  if(t.id==='addbtn'||t.id==='addcell'){openEditor(null);return}
+  if(t.id==='pdfbtn'){downloadPdf(S.current);return}
+  if(t.id==='allpdf'){downloadAll();return}
+  if(t.id==='bookpdf'){downloadBook();return}
+  if(t.id==='xlsx'){downloadXlsx();return}
+  if(t.id==='setbtn'){['company','tagline','address','footerBold','footerText'].forEach(k=>$('#s-'+k).value=S.settings[k]||'');$('#s-save').disabled=!S.canWrite;$('#settingsDlg').showModal();return}
+  if(t.id==='s-cancel'){$('#settingsDlg').close();return}
+  if(t.id==='s-save'){const v={};['company','tagline','address','footerBold','footerText'].forEach(k=>v[k]=$('#s-'+k).value.trim());S.settings={...S.settings,...v};save('settings/main',v);logHistory('Changed the PDF header and footer');$('#settingsDlg').close();toast('PDF header and footer saved',false);return}
+  if(t.id==='bulkbtn'){$('#bulkScope').textContent=`Raise or lower prices in ${cur().title}. You see every new price before anything changes.`;$('#b-amt').value='';bulkPreview();$('#bulkDlg').showModal();return}
+  if(t.id==='b-cancel'){$('#bulkDlg').close();return}
+  if(t.id==='b-apply'){bulkApply();return}
+  if(t.id==='histbtn'){renderHistory();$('#histDlg').showModal();return}
+  if(t.id==='h-close'){$('#histDlg').close();return}
+  if(t.id==='helpbtn'){$('#helpDlg').showModal();return}
+  if(t.id==='help-close'){$('#helpDlg').close();return}
+  if(t.id==='webmorebtn'){S.webShown+=300;renderWeb();return}
+  if(!S.edit)return;
+  if(t.id==='d-close'||t.id==='d-cancel'){closeEditor();return}
+  if(t.id==='d-save'){saveEditor();return}
+  if(t.id==='d-up'||t.id==='d-down'){readDraft();moveInDrawer(t.id==='d-up'?-1:1);return}
+  if(t.id==='d-dup'){const c=cur(),i=c.items.findIndex(x=>x.id===S.edit.id);const copy={...c.items[i],id:uid(),item:c.items[i].item+' copy',pair:false};const before=snapshot();c.items.splice(i+1,0,copy);commit(before,`Duplicated ${c.items[i].item}`,S.current);openEditor(copy.id);return}
+  if(t.id==='d-del'){readDraft();S.edit.confirmDel=true;renderDrawer();return}
+  if(t.id==='d-delno'){S.edit.confirmDel=false;renderDrawer();return}
+  if(t.id==='d-delyes'){const c=cur(),i=c.items.findIndex(x=>x.id===S.edit.id);const before=snapshot();const gone=c.items.splice(i,1)[0];if(!gone.pair&&c.items[i]&&c.items[i].pair)c.items[i].pair=false;if(c.items[0])c.items[0].pair=false;c.asOf=today();S.edit=null;commit(before,`Deleted ${gone.item} from ${c.title}`,S.current);return}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.edit&&!document.querySelector('dialog[open]'))closeEditor();if(e.key==='Enter'&&S.edit&&e.target.matches('.drawer input:not([type=checkbox])')){e.preventDefault();saveEditor()}});
+$('#catpick').addEventListener('change',e=>{S.current=e.target.value;S.edit=null;render()});
+$('#q').addEventListener('input',e=>{S.q=e.target.value.trim();S.webShown=200;render()});
+$('#fcat').addEventListener('change',()=>{S.webShown=200;renderWeb()});$('#fstock').addEventListener('change',()=>{S.webShown=200;renderWeb()});
+['b-mode','b-amt','b-which'].forEach(id=>$('#'+id).addEventListener('input',bulkPreview));
+document.addEventListener('change',e=>{
+  const el=e.target;
+  if(el.id==='d-photo'){const f=el.files[0];if(f){readDraft();S.edit.photo={file:f,url:URL.createObjectURL(f)};renderDrawer()}return}
+  if(el.id==='quality'){S.quality=el.value;try{localStorage.setItem('ttc-quality',S.quality)}catch(_){}toast(S.quality==='print'?'PDFs will be larger, for printing':'PDFs will be small, for WhatsApp',false);return}
+  if(el.id==='asof'){const before=snapshot();cur().asOf=el.value.trim();commit(before,`${cur().title}: prices-as-of date set to ${el.value.trim()}`,S.current);return}
+  if(el.dataset.qp){const c=cur(),it=c.items.find(x=>x.id===el.dataset.qp),p=parsePrice(el.value);if(!it)return;if(p==null){el.value=money(it.price);setStatus('Type the price as a number, like 1.25','err');return}
+    if(p===it.price)return;const before=snapshot();const old=it.price;it.price=p;c.asOf=today();const where=setPriceEverywhere(it.item,p);commit(before,`${it.item}: $${money(old)} → $${money(p)}${where.filter(w=>w!==c.title).length?' (also '+where.filter(w=>w!==c.title).join(', ')+')':''}`,S.current);return}
+  if(el.dataset.w){
+    const tr=el.closest('tr');const r=S.web[tr.dataset.part].rows[Number(tr.dataset.i)];const w=el.dataset.w;const before=snapshot();let label='';
+    if(w==='pr'){const p=parsePrice(el.value);if(p==null){el.value=money(r.pr);setStatus('Type the price as a number, like 1.25','err');return}if(p===r.pr)return;const old=r.pr;r.pr=p;const where=setPriceEverywhere(r.k,p);label=`${r.k} on website: $${money(old)} → $${money(p)}${where.filter(x=>x!=='website').length?' (also '+where.filter(x=>x!=='website').join(', ')+')':''}`}
+    else if(w==='p'){const n=Number(el.value);r.p=isNaN(n)||el.value===''?el.value:n;label=`${r.k} on website: packing ${el.value}`}
+    else if(w==='st'){r.st=el.checked?'yes':'no';label=`${r.k} on website: ${el.checked?'in stock':'out of stock'}`}
+    else if(w==='dl'){r.dl=el.checked?'yes':'';label=`${r.k} on website: ${el.checked?'deleted':'restored'}`}
+    commit(before,label,'');
+  }
+});
+
+/* ---------- history ---------- */
+async function renderHistory(){
+  const L=$('#histList');if(!S.history.length){L.innerHTML='<div class="empty">No changes yet. Every price change, new product and deletion shows up here with who made it.</div>';return}
+  const ids=[...new Set(S.history.map(h=>h.by).filter(Boolean))];
+  if(S.user&&ids.length){try{const ps=await S.user.profiles(ids);ids.forEach(id=>S.names[id]=(ps[id]&&ps[id].name)||'')}catch(_){}}
+  L.innerHTML=S.history.map(h=>`<div>${esc(h.text)}<small>${esc((h.by===S.me?'You':(S.names[h.by]||'Someone')))} · ${new Date(h.at).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</small></div>`).join('');
+}
+
+/* ---------- PDF ---------- */
+const imgCache={};
+const Q=()=>S.quality==='print'?{px:600,q:.85}:{px:320,q:.65};
+function loadImg(url){if(!url)return Promise.resolve(null);const {px,q}=Q(),key=px+'|'+url;
+  if(!imgCache[key])imgCache[key]=new Promise(res=>{const im=new Image();if(/^https?:/.test(url))im.crossOrigin='anonymous';im.onload=()=>{const sc=Math.min(1,px/Math.max(im.naturalWidth,im.naturalHeight));const cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(im.naturalWidth*sc));cv.height=Math.max(1,Math.round(im.naturalHeight*sc));const x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);x.drawImage(im,0,0,cv.width,cv.height);res({data:cv.toDataURL('image/jpeg',q),w:cv.width,h:cv.height})};im.onerror=()=>res(null);im.src=url});
+  return imgCache[key]}
+async function buildPdf(slug,opts={}){
+  const c=S.cats[slug],st=S.settings||{};
+  const cells=[];c.items.forEach(it=>{if(it.pair&&cells.length)cells[cells.length-1].push(it);else cells.push([it])});
+  const shown=cells.map(cell=>cell.filter(i=>i.active)).filter(cell=>cell.length);
+  const {jsPDF}=window.jspdf;const W=842,H=1190,M=20,colW=(W-2*M)/5,rowH=232;
+  const doc=opts.doc||new jsPDF({unit:'pt',format:[W,H],compress:true});if(opts.doc)doc.addPage([W,H]);const startPage=doc.getNumberOfPages();const BLUE=[49,130,206],GREY=[74,74,74],RED=[255,87,87];const asOf=c.asOf||today();
+  const frame=first=>{doc.setTextColor(0);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text(c.name,W-40,30,{align:'right'});
+    const fb=(st.footerBold||'')+' ',ft=(st.footerText||'').replace('{date}',asOf);doc.setFontSize(11);doc.text(fb,60,H-40);const w=doc.getTextWidth(fb);doc.setFont('helvetica','normal');doc.text(ft,60+w,H-40,{maxWidth:W-120-w});
+    if(!first)return 60;doc.setTextColor(...BLUE);doc.setFont('helvetica','bold');doc.setFontSize(24);doc.text(st.company||'',W/2,90,{align:'center'});
+    doc.setTextColor(...GREY);doc.setFontSize(11);doc.text(st.tagline||'',W/2,106,{align:'center'});doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text(st.address||'',W/2,119,{align:'center'});return 128};
+  const foot=(x,w,y,pack,price)=>{const [n,...u]=String(pack||'').split('/');doc.setTextColor(0);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text(n||'',x+4,y);if(u.length){doc.setFont('helvetica','normal');doc.text('/'+u.join('/'),x+4+doc.getTextWidth(n||''),y)}
+    doc.setTextColor(...RED);doc.setFont('helvetica','bold');doc.setFontSize(10.5);doc.text('$'+money(price),x+w-4,y,{align:'right'})};
+  let top=frame(true);
+  for(let i=0;i<shown.length;i++){
+    const cell=shown[i],col=i%5;if(col===0&&i>0)top+=rowH;if(col===0&&top+rowH>H-70){doc.addPage([W,H]);top=frame(false)}
+    const x=M+col*colW,y=top;doc.setDrawColor(0);doc.setLineWidth(1);doc.rect(x,y,colW,rowH);
+    const k=cell.length,sw=colW/k,same=cell.every(it=>it.price===cell[0].price&&it.pack===cell[0].pack);
+    for(let j=0;j<k;j++){const it=cell[j],sx=x+j*sw;
+      doc.setTextColor(...BLUE);doc.setFont('helvetica','bold');doc.setFontSize(k>1?10:11);doc.text(String(it.item),sx+sw/2,y+16,{align:'center'});
+      doc.setTextColor(...GREY);doc.setFontSize(k>1?7.5:8.5);doc.splitTextToSize(String(it.name),sw-8).slice(0,4).forEach((l,q)=>doc.text(l,sx+sw/2,y+29+q*(k>1?9.5:11),{align:'center'}));
+      const im=await loadImg(photoUrl(it));if(im){const bw=sw-(k>1?10:20),bh=k>1?128:140,s=Math.min(bw/im.w,bh/im.h),dw=im.w*s,dh=im.h*s;doc.addImage(im.data,'JPEG',sx+(sw-dw)/2,y+rowH-24-bh+(bh-dh)/2,dw,dh,undefined,'FAST')}
+      if(!same)foot(sx,sw,y+rowH-7,it.pack,it.price)}
+    if(same)foot(x,colW,y+rowH-7,cell[0].pack,cell[0].price);
+  }
+  return opts.doc?startPage:doc.output('blob');
+}
+async function buildBook(){
+  const {jsPDF}=window.jspdf,W=842,H=1190,st=S.settings||{},L=catList();
+  const doc=new jsPDF({unit:'pt',format:[W,H],compress:true});const starts=[];
+  for(let i=0;i<L.length;i++){progress(`Adding ${i+1} of ${L.length}: ${L[i][1].title}`);starts.push(await buildPdf(L[i][0],{doc}))}
+  doc.setPage(1);
+  doc.setTextColor(49,130,206);doc.setFont('helvetica','bold');doc.setFontSize(40);doc.text(st.company||'',W/2,220,{align:'center'});
+  doc.setTextColor(20,32,44);doc.setFontSize(22);doc.text('Product Catalog',W/2,260,{align:'center'});
+  doc.setTextColor(90,104,120);doc.setFont('helvetica','normal');doc.setFontSize(11);doc.text(st.tagline||'',W/2,286,{align:'center'});doc.setFontSize(9.5);doc.text(st.address||'',W/2,302,{align:'center'});
+  doc.setFontSize(11);doc.text('Updated '+today()+'  ·  Tap a category to jump to it',W/2,330,{align:'center'});
+  doc.setDrawColor(214,222,231);doc.line(160,350,W-160,350);
+  L.forEach(([s,c],i)=>{const y=385+i*28;doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(49,130,206);doc.text(c.number,170,y);doc.setTextColor(20,32,44);doc.textWithLink(c.title.replace(/([a-z])([A-Z])/g,'$1 $2'),210,y,{pageNumber:starts[i]});doc.setFont('helvetica','normal');doc.setTextColor(90,104,120);doc.text(c.items.filter(x=>x.active).length+' products  ·  page '+starts[i],W-170,y,{align:'right'})});
+  doc.setTextColor(0);doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text((st.footerBold||''),W/2,H-60,{align:'center'});
+  return doc.output('blob');
+}
+async function downloadBook(){try{const b=await buildBook();progress('');await saveFile((S.settings.company||'Catalog').replace(/[^A-Za-z0-9 ]/g,'').trim()+' Catalog '+today().replace(/\//g,'-')+'.pdf',b)}catch(e){progress('');setStatus('The catalog could not be built: '+e.message,'err')}}
+function progress(t){const p=$('#progress');p.hidden=!t;p.textContent=t||''}
+async function saveFile(name,blob){
+  try{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);setStatus('Saved '+name)}catch(e){setStatus('Could not save '+name,'err')}
+}
+async function downloadPdf(slug){progress('Building '+S.cats[slug].name+'.pdf…');try{const b=await buildPdf(slug);progress('');await saveFile(S.cats[slug].name+'.pdf',b)}catch(e){progress('');setStatus('The PDF could not be built: '+e.message,'err')}}
+async function downloadAll(){const zip=new JSZip(),L=catList();
+  try{for(let i=0;i<L.length;i++){progress(`Building PDF ${i+1} of ${L.length}: ${L[i][1].title}`);zip.file(L[i][1].name+'.pdf',await buildPdf(L[i][0]))}
+    progress('Zipping…');const b=await zip.generateAsync({type:'blob'});progress('');await saveFile((S.settings.company||'Tick Tock Inc.').replace(/[^A-Za-z0-9 ]/g,'').trim()+' Catalogs '+today().replace(/\//g,'-')+'.zip',b)}catch(e){progress('');setStatus('The PDFs could not be built: '+e.message,'err')}}
+async function downloadXlsx(){
+  const all=[];Object.keys(S.web).sort((a,b)=>S.web[a].part-S.web[b].part).forEach(p=>S.web[p].rows.forEach(r=>all.push(r)));
+  const ws={},head=['d','category','subcategory','item-code','description','packing','price','price2','stock','deleted'];head.forEach((h,j)=>ws[XLSX.utils.encode_cell({r:0,c:j})]={t:'s',v:h});
+  all.forEach((r,i)=>{const R=i+1,put=(c,v)=>{if(v===''||v==null)return;ws[XLSX.utils.encode_cell({r:R,c})]=typeof v==='number'?{t:'n',v}:{t:'s',v:String(v)}};
+    ws[XLSX.utils.encode_cell({r:R,c:0})]=R===1?{t:'n',v:1,f:'1'}:{t:'n',v:R,f:'A'+R+'+1'};
+    put(1,r.c);put(2,r.s);put(3,r.k);put(4,r.n);put(5,r.p);put(6,r.pr===''?'':Number(r.pr));put(7,r.p2===''?'':Number(r.p2));put(8,r.st);put(9,r.dl)});
+  ws['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:all.length,c:9}});const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Sheet1');
+  await saveFile('ticktockinc.com.xlsx',new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+}
+
+/* ---------- boot ---------- */
+function makeUploader(){
+  return {upload:async file=>{
+    const bmp=await createImageBitmap(file);const sc=Math.min(1,900/Math.max(bmp.width,bmp.height));
+    const cv=document.createElement('canvas');cv.width=Math.round(bmp.width*sc);cv.height=Math.round(bmp.height*sc);
+    const x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);x.drawImage(bmp,0,0,cv.width,cv.height);
+    const data=cv.toDataURL('image/jpeg',.85).split(',')[1];
+    const r=await fetch('/api/photo',{method:'POST',headers:{'content-type':'application/json','x-edit-password':localStorage.getItem('adc-pw')||''},body:JSON.stringify({data})});
+    if(!r.ok)throw new Error('upload failed');return r.json();
+  }};
+}
+async function checkPw(pw){try{const r=await fetch('/api/auth',{method:'POST',headers:{'x-edit-password':pw}});return r.ok}catch(_){return false}}
+function applyAccess(){
+  const b=$('#banner');
+  if(S.canWrite){S.assets=makeUploader();b.hidden=true}
+  else{S.assets=null;b.hidden=false;b.textContent='View only. Tap Unlock editing and enter the edit password to change prices and photos.'}
+  render();
+}
+async function unlock(){
+  const pw=prompt('Edit password');if(!pw)return;
+  if(await checkPw(pw)){try{localStorage.setItem('adc-pw',pw)}catch(_){}S.canWrite=true;applyAccess();setStatus('Editing unlocked')}
+  else{alert('That password is not right.')}
+}
+render();
+(async()=>{
+  try{
+    const r=await fetch('/api/catalog',{cache:'no-store'});if(!r.ok)throw new Error('load');const c=await r.json();
+    S.cats={'adult-day-care':c.catalog};S.settings=c.settings||{};S.history=c.history||[];S.current='adult-day-care';S.db=true;
+  }catch(e){const b=$('#banner');b.hidden=false;b.textContent='The catalog could not load. Reload the page.';return}
+  S.downloads=true;
+  let pw='';try{pw=localStorage.getItem('adc-pw')||''}catch(_){}
+  S.canWrite=pw?await checkPw(pw):false;
+  applyAccess();
+})();
+</script>
+
+</body></html>
