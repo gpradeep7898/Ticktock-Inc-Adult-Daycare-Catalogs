@@ -1,5 +1,5 @@
 {
-  "name": "ticktock-adult-daycare-catalog",
+  "name": "ticktock-catalogs",
   "private": true,
   "type": "module",
   "dependencies": { "@vercel/blob": "^1.0.0" }

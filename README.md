@@ -1,8 +1,13 @@
-# Tick Tock Inc. Adult Day Care Catalog
+# Tick Tock Inc. Catalogs
 
-Editable price catalog. Open the site to view. Tap "Unlock editing" and enter the edit password to change prices and photos, then "Download PDF".
+Two separate editable catalog sites in one Vercel project.
 
-- `index.html` the page
-- `api/catalog.js` loads and saves the catalog (Vercel Blob)
-- `api/photo.js` saves uploaded photos (Vercel Blob)
+| Section | URL | Data |
+|---|---|---|
+| Tick Tock Inc. Catalogs (25 catalogs + ticktockinc.com list) | `/` | `api/main.js`, Blob `main/` |
+| Adult Day Care Catalog | `/adult-day-care/` | `api/catalog.js`, Blob `adult-day-care/` |
+
+Anyone can view. Tap "Unlock editing", enter the edit password, then change prices and photos. Both sections use the same password.
+
 - Env vars: `EDIT_PASSWORD`, `BLOB_READ_WRITE_TOKEN`
+- The two sections never share data. Adult Day Care prices do not sync with the main catalogs.

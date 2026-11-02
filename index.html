@@ -1,6 +1,5 @@
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}</style></head><body>
-<title>Adult Day Care Catalog</title>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Tick Tock Inc. Catalogs</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
@@ -170,7 +169,7 @@ dialog::backdrop{background:rgb(10 18 26/.4)}
 
 <header class="top">
   <div class="brand"><div><h1 id="coname">Tick Tock Inc.</h1><div class="tagline" id="cotag">Importers &amp; Distributors of General Merchandise — Est. 1987</div><div class="coaddr" id="coaddr">240 Moonachie Ave. Suite 400, Moonachie, NJ 07074 | Phone: 201-853-9200 | Fax: 201-853-9477 | Email: tiktok@att.net</div><small id="totals">Loading price book…</small></div></div>
-  <div class="tabs" role="tablist" hidden><button role="tab" id="tab-cat" aria-selected="true">Catalogs</button><button role="tab" id="tab-web" aria-selected="false" hidden>Website list</button></div>
+  <div class="tabs" role="tablist"><button role="tab" id="tab-cat" aria-selected="true">Catalogs</button><button role="tab" id="tab-web" aria-selected="false">Website list</button></div>
   <label class="search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
     <input id="q" type="search" placeholder="Search item # or name across everything" autocomplete="off"></label>
   <div class="topbtns"><span class="status" id="status"></span><button class="btn small" id="unlockbtn">Unlock editing</button><button class="btn small" id="histbtn">Recent changes</button><button class="btn small" id="helpbtn">How to use</button></div>
@@ -221,7 +220,7 @@ dialog::backdrop{background:rgb(10 18 26/.4)}
 <dialog id="histDlg"><div class="dlg"><h3>Recent changes</h3><div class="hist" id="histList"></div><div class="dlgfoot"><button class="btn" id="h-close">Close</button></div></div></dialog>
 
 <dialog id="helpDlg"><div class="dlg">
-  <h3>How to use this catalog</h3>
+  <h3>How to use Tick Tock Catalogs</h3>
   <h4>Every day</h4>
   <ol>
     <li><b>Change a price:</b> open the catalog, click the product, type the new price, Save. The same item # updates in every catalog and on the website list, and the catalog's "prices as of" date becomes today.</li>
@@ -272,26 +271,17 @@ try{S.view=localStorage.getItem('ttc-view')||'sheet';S.quality=localStorage.getI
 
 /* ---------- photos ---------- */
 const extraPhotos={};
-const photoUrl=it=>it.photoId?('/_blob/'+it.photoId):(extraPhotos[it.photo]||it.photo||'');
-
+const photoUrl=it=>it.photoId?(/^https?:/.test(it.photoId)?it.photoId:('/_blob/'+it.photoId)):(extraPhotos[it.photo]||it.photo||'');
+fetch('photos-extra.json').then(r=>r.ok?r.json():{}).then(m=>{Object.assign(extraPhotos,m);if(!S.edit)render()}).catch(()=>{});
 
 /* ---------- saving ---------- */
 const queues={};let inflight=0;
 function setStatus(t,cls){const el=$('#status');el.textContent=t;el.className='status '+(cls||'')}
-let persistTimer=null;
 function save(path,data){
-  if(!S.canWrite)return;
-  inflight++;setStatus('Saving…','saving');clearTimeout(persistTimer);
-  persistTimer=setTimeout(async()=>{
-    const n=inflight;
-    try{
-      const r=await fetch('/api/catalog',{method:'PUT',headers:{'content-type':'application/json','x-edit-password':localStorage.getItem('adc-pw')||''},body:JSON.stringify({catalog:S.cats['adult-day-care'],settings:S.settings,history:S.history})});
-      if(r.status===401){S.canWrite=false;setStatus('Password not accepted. Tap Unlock editing.','err');render()}
-      else if(!r.ok)throw new Error('save failed');
-      else setStatus('All changes saved');
-    }catch(e){setStatus('Not saved. Check your connection and try again.','err')}
-    inflight=Math.max(0,inflight-n);
-  },500);
+  if(!S.db||!S.canWrite)return;
+  inflight++;setStatus('Saving…','saving');
+  queues[path]=(queues[path]||Promise.resolve()).then(()=>api({writes:[{path,data}]})).then(()=>{inflight--;if(!inflight)setStatus('All changes saved')})
+    .catch(e=>{inflight--;if(e&&e.code==='not_granted'){S.canWrite=false;applyAccess();setStatus('Password needed. Tap Unlock editing.','err')}else setStatus('Not saved. Check your connection and try again.','err')});
 }
 /* Every change: snapshot → mutate → commit. commit saves only the documents that changed, and keeps an undo step. */
 function snapshot(){const s={cats:{},web:{}};for(const k in S.cats)s.cats[k]=JSON.stringify(S.cats[k]);for(const k in S.web)s.web[k]=JSON.stringify(S.web[k]);return s}
@@ -312,7 +302,13 @@ function undo(){
 }
 let toastTimer;
 function toast(text,canUndo){const t=$('#toast');t.innerHTML=`<span>${esc(text)}</span>${canUndo&&S.canWrite?'<button id="undoBtn">Undo</button>':''}`;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.hidden=true,7000)}
-function logHistory(text,cat){if(!S.canWrite)return;S.history.unshift({at:new Date().toISOString(),by:'',text,catalog:cat||''});S.history=S.history.slice(0,60);save('history',{})}
+function logHistory(text,cat){if(!S.db||!S.canWrite)return;const h={at:new Date().toISOString(),text,catalog:cat||''};S.history.unshift(h);api({history:h}).catch(()=>{})}
+async function api(body){
+  const r=await fetch('/api/main',{method:'PUT',headers:{'content-type':'application/json','x-edit-password':pw()},body:JSON.stringify(body)});
+  if(r.status===401){const e=new Error('password');e.code='not_granted';throw e}
+  if(!r.ok)throw new Error('save failed');return r.json();
+}
+function pw(){try{return localStorage.getItem('ttc-pw')||''}catch(_){return ''}}
 
 /* ---------- sync by item # ---------- */
 function webIndex(){const m={};for(const p in S.web)S.web[p].rows.forEach((r,i)=>{const k=norm(r.k);(m[k]=m[k]||[]).push([p,i])});return m}
@@ -333,10 +329,9 @@ function matches(it){if(!S.q)return true;const q=S.q.toLowerCase();return norm(i
 
 /* ---------- rendering ---------- */
 function render(){
-  const ub=$('#unlockbtn');if(ub)ub.hidden=!!S.canWrite;
   const L=catList(),tot=L.reduce((n,[,c])=>n+c.items.length,0),wtot=Object.values(S.web).reduce((n,w)=>n+w.rows.length,0);
   if(S.settings.company){$('#coname').textContent=S.settings.company;$('#cotag').textContent=S.settings.tagline||'';$('#coaddr').textContent=S.settings.address||''}
-  $('#totals').textContent=L.length?`${tot} products`:'Loading catalog…';
+  $('#totals').textContent=L.length?`${L.length} catalogs · ${tot} products · ${wtot} on the website`:'Loading price book…';
   $('#view-cat').hidden=S.tab!=='cat';$('#view-web').hidden=S.tab!=='web';
   $('#tab-cat').setAttribute('aria-selected',S.tab==='cat');$('#tab-web').setAttribute('aria-selected',S.tab==='web');
   if(S.tab==='cat'){renderRail();renderCatalog()}else renderWeb();
@@ -346,12 +341,12 @@ function renderRail(){
   const L=catList();
   $('#rail').innerHTML=L.map(([s,c])=>`<button class="cat" data-slug="${s}" aria-current="${s===S.current}"><span class="no">${esc(c.number)}</span><span>${esc(c.title)}</span><span class="ct">${c.items.filter(i=>i.active).length}</span></button>`).join('')+
     `<div class="railfoot"><button class="btn ghost" id="setbtn">PDF header &amp; footer</button></div>`;
-  $('#dlbar').innerHTML=`<div><b>PDF for customers</b><small>Edit prices and photos, then tap Download PDF</small></div><div class="dlacts"><label class="sizepick">File size <select id="quality"><option value="small" ${S.quality!=='print'?'selected':''}>Small, for WhatsApp</option><option value="print" ${S.quality==='print'?'selected':''}>Large, for printing</option></select></label></div>`;
+  $('#dlbar').innerHTML=`<div><b>Send to customers</b><small>One file with all ${L.length} catalogs and a contents page</small></div><div class="dlacts"><button class="btn primary" id="bookpdf" ${L.length?'':'disabled'}>Full catalog, one PDF</button><button class="btn" id="allpdf" ${L.length?'':'disabled'}>All ${L.length} PDFs (.zip)</button><label class="sizepick">File size <select id="quality"><option value="small" ${S.quality!=='print'?'selected':''}>Small, for WhatsApp</option><option value="print" ${S.quality==='print'?'selected':''}>Large, for printing</option></select></label></div>`;
   $('#catpick').innerHTML=L.map(([s,c])=>`<option value="${s}" ${s===S.current?'selected':''}>${esc(c.number+' · '+c.title)} (${c.items.length})</option>`).join('');
 }
 function renderCatalog(){
   const panel=$('#catpanel');if(!S.db)return;
-  const L=catList();if(!L.length){panel.innerHTML='<div class="empty">The catalog appears here as soon as it loads.</div>';return}
+  const L=catList();if(!L.length){panel.innerHTML='<div class="empty">The 25 catalogs appear here as soon as the price book loads.</div>';return}
   if(S.q)return renderSearch();
   if(!S.cats[S.current])S.current=L[0][0];
   const c=cur(),ro=!S.canWrite,shown=c.items.filter(i=>i.active).length,pairs=c.items.filter(i=>i.pair).length;
@@ -426,6 +421,8 @@ function renderDrawer(){
         <label class="field">Pack<input id="d-pack" value="${esc(d.pack)}" placeholder="12/cs" ${ro?'disabled':''}></label></div>
       <label class="field">Product name<textarea id="d-name" rows="2" placeholder="Lucky Liquid Hand Soap 14 fl oz Lavender" ${ro?'disabled':''}>${esc(d.name)}</textarea></label>
       <label class="field">Price<div class="pricebox"><span>$</span><input id="d-price" inputmode="decimal" value="${money(d.price)}" placeholder="1.00" ${ro?'disabled':''}></div></label>
+      ${!isNew&&(wi.length||others.length)?`<div class="sync">A new price also updates <b>${[...others.map(([s])=>S.cats[s].title),...(wi.length?['the website list']:[])].filter((v,i,a)=>a.indexOf(v)===i).join(', ')}</b>.</div>`:''}
+      ${!isNew&&syncable(k)&&!wi.length?'<div class="sync">This item # is not on the website list.</div>':''}
       <label class="switchrow"><input type="checkbox" class="toggle" id="d-active" ${d.active?'checked':''} ${ro?'disabled':''}><span>Show in PDF<small>Turn off to hide it without deleting it.</small></span></label>
       <label class="switchrow"><input type="checkbox" class="toggle" id="d-pair" ${d.pair?'checked':''} ${ro||E.pos===0?'disabled':''}><span>Share a box with the product before<small>Prints both side by side in one box, like Bic Classic and Sensitive.</small></span></label>
       ${isNew?`<label class="field">Put it after<select id="d-after"><option value="-1">At the start</option>${c.items.map((it,i)=>`<option value="${i}" ${i===c.items.length-1?'selected':''}>${esc(it.item)} · ${esc(it.name.slice(0,42))}</option>`).join('')}</select></label>`:
@@ -444,14 +441,14 @@ async function saveEditor(){
   if(E.photo){
     if(!S.assets){msg.textContent='Only editors can add photos.';return}
     msg.textContent='Uploading photo…';msg.className='status saving';
-    try{const r=await S.assets.upload(E.photo.file);d.photo=r.url}catch(err){msg.className='status err';msg.textContent='The photo did not upload. Try a JPG or PNG under 20 MB.';return}
+    try{const r=await S.assets.upload(E.photo.file);d.photoId=r.id}catch(err){msg.className='status err';msg.textContent='The photo did not upload. Try a JPG or PNG under 20 MB.';return}
   }
   const before=snapshot();
   const item={id:d.id,item:d.item,name:d.name,pack:d.pack,price,active:d.active,pair:d.pair,photo:d.photo||''};if(d.photoId)item.photoId=d.photoId;
   let label;
   if(!E.id){const after=Number($('#d-after').value);if(after<0)item.pair=false;c.items.splice(after+1,0,item);label=`Added ${item.item} to ${c.title}`}
   else{const i=c.items.findIndex(x=>x.id===E.id);const old=c.items[i];c.items[i]=item;if(i===0)item.pair=false;
-    const ch=[];if(old.price!==price)ch.push(`$${money(old.price)} → $${money(price)}`);if(old.name!==item.name)ch.push('name');if(old.pack!==item.pack)ch.push('pack');if(old.item!==item.item)ch.push('item #');if(old.active!==item.active)ch.push(item.active?'shown':'hidden');if(!!old.pair!==!!item.pair)ch.push(item.pair?'shares a box':'own box');if(d.photo!==old.photo)ch.push('new photo');
+    const ch=[];if(old.price!==price)ch.push(`$${money(old.price)} → $${money(price)}`);if(old.name!==item.name)ch.push('name');if(old.pack!==item.pack)ch.push('pack');if(old.item!==item.item)ch.push('item #');if(old.active!==item.active)ch.push(item.active?'shown':'hidden');if(!!old.pair!==!!item.pair)ch.push(item.pair?'shares a box':'own box');if(d.photoId&&d.photoId!==old.photoId)ch.push('new photo');
     label=`${item.item}: ${ch.join(', ')||'saved'}`}
   c.asOf=today();
   const where=setPriceEverywhere(item.item,price);setPackOnWeb(item.item,item.pack);
@@ -491,7 +488,6 @@ document.addEventListener('click',e=>{
   const row=e.target.closest('tr.clickable');
   if(row&&!e.target.closest('input')){if(row.dataset.open){S.q='';$('#q').value='';S.current=row.dataset.open;render()}openEditor(row.dataset.id);return}
   const t=e.target.closest('button');if(!t)return;
-  if(t.id==='unlockbtn'){unlock();return}
   if(t.id==='undoBtn'){undo();$('#toast').hidden=true;return}
   if(t.id==='tab-cat'||t.id==='tab-web'){S.tab=t.id==='tab-cat'?'cat':'web';render();return}
   if(t.dataset.slug){S.current=t.dataset.slug;S.edit=null;render();window.scrollTo({top:0});return}
@@ -502,6 +498,7 @@ document.addEventListener('click',e=>{
   if(t.id==='allpdf'){downloadAll();return}
   if(t.id==='bookpdf'){downloadBook();return}
   if(t.id==='xlsx'){downloadXlsx();return}
+  if(t.id==='unlockbtn'){unlock();return}
   if(t.id==='setbtn'){['company','tagline','address','footerBold','footerText'].forEach(k=>$('#s-'+k).value=S.settings[k]||'');$('#s-save').disabled=!S.canWrite;$('#settingsDlg').showModal();return}
   if(t.id==='s-cancel'){$('#settingsDlg').close();return}
   if(t.id==='s-save'){const v={};['company','tagline','address','footerBold','footerText'].forEach(k=>v[k]=$('#s-'+k).value.trim());S.settings={...S.settings,...v};save('settings/main',v);logHistory('Changed the PDF header and footer');$('#settingsDlg').close();toast('PDF header and footer saved',false);return}
@@ -546,17 +543,15 @@ document.addEventListener('change',e=>{
 
 /* ---------- history ---------- */
 async function renderHistory(){
-  const L=$('#histList');if(!S.history.length){L.innerHTML='<div class="empty">No changes yet. Every price change, new product and deletion shows up here with who made it.</div>';return}
-  const ids=[...new Set(S.history.map(h=>h.by).filter(Boolean))];
-  if(S.user&&ids.length){try{const ps=await S.user.profiles(ids);ids.forEach(id=>S.names[id]=(ps[id]&&ps[id].name)||'')}catch(_){}}
-  L.innerHTML=S.history.map(h=>`<div>${esc(h.text)}<small>${esc((h.by===S.me?'You':(S.names[h.by]||'Someone')))} · ${new Date(h.at).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</small></div>`).join('');
+  const L=$('#histList');if(!S.history.length){L.innerHTML='<div class="empty">No changes yet. Every price change, new product and deletion shows up here.</div>';return}
+  L.innerHTML=S.history.map(h=>`<div>${esc(h.text)}<small>${new Date(h.at).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</small></div>`).join('');
 }
 
 /* ---------- PDF ---------- */
 const imgCache={};
 const Q=()=>S.quality==='print'?{px:600,q:.85}:{px:320,q:.65};
 function loadImg(url){if(!url)return Promise.resolve(null);const {px,q}=Q(),key=px+'|'+url;
-  if(!imgCache[key])imgCache[key]=new Promise(res=>{const im=new Image();if(/^https?:/.test(url))im.crossOrigin='anonymous';im.onload=()=>{const sc=Math.min(1,px/Math.max(im.naturalWidth,im.naturalHeight));const cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(im.naturalWidth*sc));cv.height=Math.max(1,Math.round(im.naturalHeight*sc));const x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);x.drawImage(im,0,0,cv.width,cv.height);res({data:cv.toDataURL('image/jpeg',q),w:cv.width,h:cv.height})};im.onerror=()=>res(null);im.src=url});
+  if(!imgCache[key])imgCache[key]=new Promise(res=>{const im=new Image();im.onload=()=>{const sc=Math.min(1,px/Math.max(im.naturalWidth,im.naturalHeight));const cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(im.naturalWidth*sc));cv.height=Math.max(1,Math.round(im.naturalHeight*sc));const x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);x.drawImage(im,0,0,cv.width,cv.height);res({data:cv.toDataURL('image/jpeg',q),w:cv.width,h:cv.height})};im.onerror=()=>res(null);im.src=url});
   return imgCache[key]}
 async function buildPdf(slug,opts={}){
   const c=S.cats[slug],st=S.settings||{};
@@ -624,32 +619,37 @@ function makeUploader(){
     const cv=document.createElement('canvas');cv.width=Math.round(bmp.width*sc);cv.height=Math.round(bmp.height*sc);
     const x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);x.drawImage(bmp,0,0,cv.width,cv.height);
     const data=cv.toDataURL('image/jpeg',.85).split(',')[1];
-    const r=await fetch('/api/photo',{method:'POST',headers:{'content-type':'application/json','x-edit-password':localStorage.getItem('adc-pw')||''},body:JSON.stringify({data})});
-    if(!r.ok)throw new Error('upload failed');return r.json();
+    const r=await fetch('/api/main-photo',{method:'POST',headers:{'content-type':'application/json','x-edit-password':pw()},body:JSON.stringify({data})});
+    if(!r.ok)throw new Error('upload failed');const j=await r.json();return {id:j.url,url:j.url};
   }};
 }
-async function checkPw(pw){try{const r=await fetch('/api/auth',{method:'POST',headers:{'x-edit-password':pw}});return r.ok}catch(_){return false}}
+async function checkPw(p){try{const r=await fetch('/api/auth',{method:'POST',headers:{'x-edit-password':p}});return r.ok}catch(_){return false}}
 function applyAccess(){
-  const b=$('#banner');
+  const b=$('#banner'),ub=$('#unlockbtn');if(ub)ub.hidden=!!S.canWrite;
   if(S.canWrite){S.assets=makeUploader();b.hidden=true}
   else{S.assets=null;b.hidden=false;b.textContent='View only. Tap Unlock editing and enter the edit password to change prices and photos.'}
   render();
 }
 async function unlock(){
-  const pw=prompt('Edit password');if(!pw)return;
-  if(await checkPw(pw)){try{localStorage.setItem('adc-pw',pw)}catch(_){}S.canWrite=true;applyAccess();setStatus('Editing unlocked')}
+  const p=prompt('Edit password');if(!p)return;
+  if(await checkPw(p)){try{localStorage.setItem('ttc-pw',p)}catch(_){}S.canWrite=true;applyAccess();setStatus('Editing unlocked')}
   else{alert('That password is not right.')}
+}
+async function loadAll(first){
+  const r=await fetch('/api/main',{cache:'no-store'});if(!r.ok)throw new Error('load');const d=await r.json();
+  for(const k in d.catalogs)S.cats[k]=d.catalogs[k];
+  for(const k in d.web)S.web[k]=d.web[k];
+  S.settings=d.settings||{};S.history=d.history||[];
+  if(!S.current||!S.cats[S.current]){const h=location.hash.slice(1);S.current=S.cats[h]?h:catList()[0][0]}
 }
 render();
 (async()=>{
-  try{
-    const r=await fetch('/api/catalog',{cache:'no-store'});if(!r.ok)throw new Error('load');const c=await r.json();
-    S.cats={'adult-day-care':c.catalog};S.settings=c.settings||{};S.history=c.history||[];S.current='adult-day-care';S.db=true;
-  }catch(e){const b=$('#banner');b.hidden=false;b.textContent='The catalog could not load. Reload the page.';return}
-  S.downloads=true;
-  let pw='';try{pw=localStorage.getItem('adc-pw')||''}catch(_){}
-  S.canWrite=pw?await checkPw(pw):false;
+  try{await loadAll(true)}catch(e){const b=$('#banner');b.hidden=false;b.textContent='The price book could not load. Reload the page.';$('#catpanel').innerHTML='<div class="empty">The price book could not load.</div>';return}
+  S.db=true;S.downloads=true;
+  S.canWrite=pw()?await checkPw(pw()):false;
   applyAccess();
+  const refresh=async()=>{if(document.hidden||inflight||S.edit||document.activeElement?.matches('input.cell, #asof'))return;try{await loadAll();render()}catch(_){}};
+  document.addEventListener('visibilitychange',refresh);setInterval(refresh,90000);
 })();
 </script>
 
