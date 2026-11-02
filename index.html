@@ -426,8 +426,6 @@ function renderDrawer(){
         <label class="field">Pack<input id="d-pack" value="${esc(d.pack)}" placeholder="12/cs" ${ro?'disabled':''}></label></div>
       <label class="field">Product name<textarea id="d-name" rows="2" placeholder="Lucky Liquid Hand Soap 14 fl oz Lavender" ${ro?'disabled':''}>${esc(d.name)}</textarea></label>
       <label class="field">Price<div class="pricebox"><span>$</span><input id="d-price" inputmode="decimal" value="${money(d.price)}" placeholder="1.00" ${ro?'disabled':''}></div></label>
-      ${!isNew&&(wi.length||others.length)?`<div class="sync">A new price also updates <b>${[...others.map(([s])=>S.cats[s].title),...(wi.length?['the website list']:[])].filter((v,i,a)=>a.indexOf(v)===i).join(', ')}</b>.</div>`:''}
-      ${!isNew&&syncable(k)&&!wi.length?'<div class="sync">This item # is not on the website list.</div>':''}
       <label class="switchrow"><input type="checkbox" class="toggle" id="d-active" ${d.active?'checked':''} ${ro?'disabled':''}><span>Show in PDF<small>Turn off to hide it without deleting it.</small></span></label>
       <label class="switchrow"><input type="checkbox" class="toggle" id="d-pair" ${d.pair?'checked':''} ${ro||E.pos===0?'disabled':''}><span>Share a box with the product before<small>Prints both side by side in one box, like Bic Classic and Sensitive.</small></span></label>
       ${isNew?`<label class="field">Put it after<select id="d-after"><option value="-1">At the start</option>${c.items.map((it,i)=>`<option value="${i}" ${i===c.items.length-1?'selected':''}>${esc(it.item)} · ${esc(it.name.slice(0,42))}</option>`).join('')}</select></label>`:
