@@ -553,12 +553,29 @@ const Q=()=>S.quality==='print'?{px:600,q:.85}:{px:320,q:.65};
 function loadImg(url){if(!url)return Promise.resolve(null);const {px,q}=Q(),key=px+'|'+url;
   if(!imgCache[key])imgCache[key]=new Promise(res=>{const im=new Image();im.onload=()=>{const sc=Math.min(1,px/Math.max(im.naturalWidth,im.naturalHeight));const cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(im.naturalWidth*sc));cv.height=Math.max(1,Math.round(im.naturalHeight*sc));const x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);x.drawImage(im,0,0,cv.width,cv.height);res({data:cv.toDataURL('image/jpeg',q),w:cv.width,h:cv.height})};im.onerror=()=>res(null);im.src=url});
   return imgCache[key]}
+/* Letter (8.5x11in) output. Layout is drawn in a 842-unit-wide space and scaled to 612pt wide. */
+const PDF_S=612/842,PDF_H=Math.floor(792/PDF_S);
+function mkDoc(jsPDF){
+  const s=PDF_S,d=new jsPDF({unit:'pt',format:[612,792],compress:true});
+  const o={
+    text:(t,x,y,op)=>d.text(t,x*s,y*s,op&&op.maxWidth?{...op,maxWidth:op.maxWidth*s}:op),
+    textWithLink:(t,x,y,op)=>d.textWithLink(t,x*s,y*s,op),
+    setFontSize:n=>d.setFontSize(n*s),setLineWidth:n=>d.setLineWidth(n*s),
+    rect:(x,y,w,h,st)=>d.rect(x*s,y*s,w*s,h*s,st),
+    line:(a,b,c,e)=>d.line(a*s,b*s,c*s,e*s),
+    addImage:(im,f,x,y,w,h,al,cp)=>d.addImage(im,f,x*s,y*s,w*s,h*s,al,cp),
+    getTextWidth:t=>d.getTextWidth(t)/s,
+    splitTextToSize:(t,w)=>d.splitTextToSize(t,w*s),
+    addPage:()=>d.addPage([612,792])
+  };
+  return new Proxy(o,{get:(t,k)=>k in t?t[k]:(typeof d[k]==='function'?d[k].bind(d):d[k])});
+}
 async function buildPdf(slug,opts={}){
   const c=S.cats[slug],st=S.settings||{};
   const cells=[];c.items.forEach(it=>{if(it.pair&&cells.length)cells[cells.length-1].push(it);else cells.push([it])});
   const shown=cells.map(cell=>cell.filter(i=>i.active)).filter(cell=>cell.length);
-  const {jsPDF}=window.jspdf;const W=842,H=1190,M=20,colW=(W-2*M)/5,rowH=232;
-  const doc=opts.doc||new jsPDF({unit:'pt',format:[W,H],compress:true});if(opts.doc)doc.addPage([W,H]);const startPage=doc.getNumberOfPages();const BLUE=[49,130,206],GREY=[74,74,74],RED=[255,87,87];const asOf=c.asOf||today();
+  const {jsPDF}=window.jspdf;const W=842,H=PDF_H,M=20,colW=(W-2*M)/5,rowH=232;
+  const doc=opts.doc||mkDoc(jsPDF);if(opts.doc)doc.addPage([W,H]);const startPage=doc.getNumberOfPages();const BLUE=[49,130,206],GREY=[74,74,74],RED=[255,87,87];const asOf=c.asOf||today();
   const frame=first=>{doc.setTextColor(0);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text(c.name,W-40,30,{align:'right'});
     const fb=(st.footerBold||'')+' ',ft=(st.footerText||'').replace('{date}',asOf);doc.setFontSize(11);doc.text(fb,60,H-40);const w=doc.getTextWidth(fb);doc.setFont('helvetica','normal');doc.text(ft,60+w,H-40,{maxWidth:W-120-w});
     if(!first)return 60;doc.setTextColor(...BLUE);doc.setFont('helvetica','bold');doc.setFontSize(24);doc.text(st.company||'',W/2,90,{align:'center'});
@@ -580,8 +597,8 @@ async function buildPdf(slug,opts={}){
   return opts.doc?startPage:doc.output('blob');
 }
 async function buildBook(){
-  const {jsPDF}=window.jspdf,W=842,H=1190,st=S.settings||{},L=catList();
-  const doc=new jsPDF({unit:'pt',format:[W,H],compress:true});const starts=[];
+  const {jsPDF}=window.jspdf,W=842,H=PDF_H,st=S.settings||{},L=catList();
+  const doc=mkDoc(jsPDF);const starts=[];
   for(let i=0;i<L.length;i++){progress(`Adding ${i+1} of ${L.length}: ${L[i][1].title}`);starts.push(await buildPdf(L[i][0],{doc}))}
   doc.setPage(1);
   doc.setTextColor(49,130,206);doc.setFont('helvetica','bold');doc.setFontSize(40);doc.text(st.company||'',W/2,220,{align:'center'});
