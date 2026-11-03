@@ -209,12 +209,21 @@ dialog::backdrop{background:rgb(10 18 26/.4)}
 </div></dialog>
 
 <dialog id="settingsDlg"><div class="dlg">
-  <h3>PDF header and footer</h3>
+  <h3>PDF header, footer, font and colors</h3>
   <label class="field">Company name<input id="s-company"></label>
   <label class="field">Tagline<input id="s-tagline"></label>
   <label class="field">Address line<input id="s-address"></label>
   <label class="field">Footer, bold part<input id="s-footerBold"></label>
   <label class="field">Footer text ({date} becomes the catalog's prices-as-of date)<input id="s-footerText"></label>
+  <div style="margin-top:10px;font-weight:700">Font and colors</div>
+  <label class="field">Font<select id="s-font"><option value="helvetica">Helvetica (clean)</option><option value="times">Times (classic)</option><option value="courier">Courier (typewriter)</option></select></label>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <label class="field">Item # color<input type="color" id="s-cItem" style="height:36px;width:100%"></label>
+    <label class="field">Product name color<input type="color" id="s-cName" style="height:36px;width:100%"></label>
+    <label class="field">Price color<input type="color" id="s-cPrice" style="height:36px;width:100%"></label>
+    <label class="field">Company name color<input type="color" id="s-cHead" style="height:36px;width:100%"></label>
+  </div>
+  <div><button class="btn small" id="s-reset" type="button">Reset font and colors</button></div>
   <div class="dlgfoot"><button class="btn" id="s-cancel">Cancel</button><button class="btn primary" id="s-save">Save</button></div>
 </div></dialog>
 
@@ -345,7 +354,7 @@ function render(){
 function renderRail(){
   const L=catList();
   $('#rail').innerHTML=L.map(([s,c])=>`<button class="cat" data-slug="${s}" aria-current="${s===S.current}"><span class="no">${esc(c.number)}</span><span>${esc(c.title)}</span><span class="ct">${c.items.filter(i=>i.active).length}</span></button>`).join('')+
-    `<div class="railfoot"><button class="btn ghost" id="setbtn">PDF header &amp; footer</button></div>`;
+    `<div class="railfoot"><button class="btn ghost" id="setbtn">PDF font, colors &amp; header</button></div>`;
   $('#dlbar').innerHTML=`<div><b>PDF for customers</b><small>Edit prices and photos, then tap Download PDF</small></div><div class="dlacts"><label class="sizepick">File size <select id="quality"><option value="small" ${S.quality!=='print'?'selected':''}>Small, for WhatsApp</option><option value="print" ${S.quality==='print'?'selected':''}>Large, for printing</option></select></label></div>`;
   $('#catpick').innerHTML=L.map(([s,c])=>`<option value="${s}" ${s===S.current?'selected':''}>${esc(c.number+' · '+c.title)} (${c.items.length})</option>`).join('');
 }
@@ -502,9 +511,10 @@ document.addEventListener('click',e=>{
   if(t.id==='allpdf'){downloadAll();return}
   if(t.id==='bookpdf'){downloadBook();return}
   if(t.id==='xlsx'){downloadXlsx();return}
-  if(t.id==='setbtn'){['company','tagline','address','footerBold','footerText'].forEach(k=>$('#s-'+k).value=S.settings[k]||'');$('#s-save').disabled=!S.canWrite;$('#settingsDlg').showModal();return}
+  if(t.id==='setbtn'){['company','tagline','address','footerBold','footerText'].forEach(k=>$('#s-'+k).value=S.settings[k]||'');['font','cItem','cName','cPrice','cHead'].forEach(k=>$('#s-'+k).value=S.settings[k]||PDF_DEF[k]);$('#s-save').disabled=!S.canWrite;$('#settingsDlg').showModal();return}
+  if(t.id==='s-reset'){['font','cItem','cName','cPrice','cHead'].forEach(k=>$('#s-'+k).value=PDF_DEF[k]);return}
   if(t.id==='s-cancel'){$('#settingsDlg').close();return}
-  if(t.id==='s-save'){const v={};['company','tagline','address','footerBold','footerText'].forEach(k=>v[k]=$('#s-'+k).value.trim());S.settings={...S.settings,...v};save('settings/main',v);logHistory('Changed the PDF header and footer');$('#settingsDlg').close();toast('PDF header and footer saved',false);return}
+  if(t.id==='s-save'){const v={};['company','tagline','address','footerBold','footerText'].forEach(k=>v[k]=$('#s-'+k).value.trim());['font','cItem','cName','cPrice','cHead'].forEach(k=>v[k]=$('#s-'+k).value);S.settings={...S.settings,...v};save('settings/main',v);logHistory('Changed the PDF header, footer, font or colors');$('#settingsDlg').close();toast('PDF header, footer, font and colors saved',false);return}
   if(t.id==='bulkbtn'){$('#bulkScope').textContent=`Raise or lower prices in ${cur().title}. You see every new price before anything changes.`;$('#b-amt').value='';bulkPreview();$('#bulkDlg').showModal();return}
   if(t.id==='b-cancel'){$('#bulkDlg').close();return}
   if(t.id==='b-apply'){bulkApply();return}
@@ -575,25 +585,28 @@ function mkDoc(jsPDF){
   };
   return new Proxy(o,{get:(t,k)=>k in t?t[k]:(typeof d[k]==='function'?d[k].bind(d):d[k])});
 }
+const PDF_DEF={font:'helvetica',cItem:'#3182ce',cName:'#4a4a4a',cPrice:'#ff5757',cHead:'#3182ce'};
+function pdfStyle(){const st=S.settings||{};const rgb=(h,d)=>{const m=/^#?([0-9a-f]{6})$/i.exec(h||'')||/^#?([0-9a-f]{6})$/i.exec(d);const n=parseInt(m[1],16);return[(n>>16)&255,(n>>8)&255,n&255]};
+  return{font:['helvetica','times','courier'].includes(st.font)?st.font:'helvetica',item:rgb(st.cItem,PDF_DEF.cItem),name:rgb(st.cName,PDF_DEF.cName),price:rgb(st.cPrice,PDF_DEF.cPrice),head:rgb(st.cHead,PDF_DEF.cHead)}}
 async function buildPdf(slug,opts={}){
   const c=S.cats[slug],st=S.settings||{};
   const cells=[];c.items.forEach(it=>{if(it.pair&&cells.length)cells[cells.length-1].push(it);else cells.push([it])});
   const shown=cells.map(cell=>cell.filter(i=>i.active)).filter(cell=>cell.length);
   const {jsPDF}=window.jspdf;const W=842,H=PDF_H,M=20,colW=(W-2*M)/5,rowH=232;
-  const doc=opts.doc||mkDoc(jsPDF);if(opts.doc)doc.addPage([W,H]);const startPage=doc.getNumberOfPages();const BLUE=[49,130,206],GREY=[74,74,74],RED=[255,87,87];const asOf=c.asOf||today();
-  const frame=first=>{doc.setTextColor(0);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text(c.name,W-40,30,{align:'right'});
-    const fb=(st.footerBold||'')+' ',ft=(st.footerText||'').replace('{date}',asOf);doc.setFontSize(11);doc.text(fb,60,H-40);const w=doc.getTextWidth(fb);doc.setFont('helvetica','normal');doc.text(ft,60+w,H-40,{maxWidth:W-120-w});
-    if(!first)return 60;doc.setTextColor(...BLUE);doc.setFont('helvetica','bold');doc.setFontSize(24);doc.text(st.company||'',W/2,90,{align:'center'});
-    doc.setTextColor(...GREY);doc.setFontSize(11);doc.text(st.tagline||'',W/2,106,{align:'center'});doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text(st.address||'',W/2,119,{align:'center'});return 128};
-  const foot=(x,w,y,pack,price)=>{const [n,...u]=String(pack||'').split('/');doc.setTextColor(0);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text(n||'',x+4,y);if(u.length){doc.setFont('helvetica','normal');doc.text('/'+u.join('/'),x+4+doc.getTextWidth(n||''),y)}
-    doc.setTextColor(...RED);doc.setFont('helvetica','bold');doc.setFontSize(10.5);doc.text('$'+money(price),x+w-4,y,{align:'right'})};
+  const doc=opts.doc||mkDoc(jsPDF);if(opts.doc)doc.addPage([W,H]);const startPage=doc.getNumberOfPages();const PS=pdfStyle(),F=PS.font,BLUE=PS.item,GREY=PS.name,RED=PS.price,HEAD=PS.head;const asOf=c.asOf||today();
+  const frame=first=>{doc.setTextColor(0);doc.setFont(F,'bold');doc.setFontSize(10);doc.text(c.name,W-40,30,{align:'right'});
+    const fb=(st.footerBold||'')+' ',ft=(st.footerText||'').replace('{date}',asOf);doc.setFontSize(11);doc.text(fb,60,H-40);const w=doc.getTextWidth(fb);doc.setFont(F,'normal');doc.text(ft,60+w,H-40,{maxWidth:W-120-w});
+    if(!first)return 60;doc.setTextColor(...HEAD);doc.setFont(F,'bold');doc.setFontSize(24);doc.text(st.company||'',W/2,90,{align:'center'});
+    doc.setTextColor(...GREY);doc.setFontSize(11);doc.text(st.tagline||'',W/2,106,{align:'center'});doc.setFont(F,'normal');doc.setFontSize(9);doc.text(st.address||'',W/2,119,{align:'center'});return 128};
+  const foot=(x,w,y,pack,price)=>{const [n,...u]=String(pack||'').split('/');doc.setTextColor(0);doc.setFont(F,'bold');doc.setFontSize(10);doc.text(n||'',x+4,y);if(u.length){doc.setFont(F,'normal');doc.text('/'+u.join('/'),x+4+doc.getTextWidth(n||''),y)}
+    doc.setTextColor(...RED);doc.setFont(F,'bold');doc.setFontSize(10.5);doc.text('$'+money(price),x+w-4,y,{align:'right'})};
   let top=frame(true);
   for(let i=0;i<shown.length;i++){
     const cell=shown[i],col=i%5;if(col===0&&i>0)top+=rowH;if(col===0&&top+rowH>H-70){doc.addPage([W,H]);top=frame(false)}
     const x=M+col*colW,y=top;doc.setDrawColor(0);doc.setLineWidth(1);doc.rect(x,y,colW,rowH);
     const k=cell.length,sw=colW/k,same=cell.every(it=>it.price===cell[0].price&&it.pack===cell[0].pack);
     for(let j=0;j<k;j++){const it=cell[j],sx=x+j*sw;
-      doc.setTextColor(...BLUE);doc.setFont('helvetica','bold');doc.setFontSize(k>1?10:11);doc.text(String(it.item),sx+sw/2,y+16,{align:'center'});
+      doc.setTextColor(...BLUE);doc.setFont(F,'bold');doc.setFontSize(k>1?10:11);doc.text(String(it.item),sx+sw/2,y+16,{align:'center'});
       doc.setTextColor(...GREY);doc.setFontSize(k>1?7.5:8.5);doc.splitTextToSize(String(it.name),sw-8).slice(0,4).forEach((l,q)=>doc.text(l,sx+sw/2,y+29+q*(k>1?9.5:11),{align:'center'}));
       const im=await loadImg(photoUrl(it));if(im){const bw=sw-(k>1?10:20),bh=k>1?128:140,s=Math.min(bw/im.w,bh/im.h),dw=im.w*s,dh=im.h*s;doc.addImage(im.data,'JPEG',sx+(sw-dw)/2,y+rowH-24-bh+(bh-dh)/2,dw,dh,undefined,'FAST')}
       if(!same)foot(sx,sw,y+rowH-7,it.pack,it.price)}
@@ -602,17 +615,17 @@ async function buildPdf(slug,opts={}){
   return opts.doc?startPage:doc.output('blob');
 }
 async function buildBook(){
-  const {jsPDF}=window.jspdf,W=842,H=PDF_H,st=S.settings||{},L=catList();
+  const PS=pdfStyle(),F=PS.font;const {jsPDF}=window.jspdf,W=842,H=PDF_H,st=S.settings||{},L=catList();
   const doc=mkDoc(jsPDF);const starts=[];
   for(let i=0;i<L.length;i++){progress(`Adding ${i+1} of ${L.length}: ${L[i][1].title}`);starts.push(await buildPdf(L[i][0],{doc}))}
   doc.setPage(1);
-  doc.setTextColor(49,130,206);doc.setFont('helvetica','bold');doc.setFontSize(40);doc.text(st.company||'',W/2,220,{align:'center'});
+  doc.setTextColor(...PS.head);doc.setFont(F,'bold');doc.setFontSize(40);doc.text(st.company||'',W/2,220,{align:'center'});
   doc.setTextColor(20,32,44);doc.setFontSize(22);doc.text('Product Catalog',W/2,260,{align:'center'});
-  doc.setTextColor(90,104,120);doc.setFont('helvetica','normal');doc.setFontSize(11);doc.text(st.tagline||'',W/2,286,{align:'center'});doc.setFontSize(9.5);doc.text(st.address||'',W/2,302,{align:'center'});
+  doc.setTextColor(90,104,120);doc.setFont(F,'normal');doc.setFontSize(11);doc.text(st.tagline||'',W/2,286,{align:'center'});doc.setFontSize(9.5);doc.text(st.address||'',W/2,302,{align:'center'});
   doc.setFontSize(11);doc.text('Updated '+today()+'  ·  Tap a category to jump to it',W/2,330,{align:'center'});
   doc.setDrawColor(214,222,231);doc.line(160,350,W-160,350);
-  L.forEach(([s,c],i)=>{const y=385+i*28;doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(49,130,206);doc.text(c.number,170,y);doc.setTextColor(20,32,44);doc.textWithLink(c.title.replace(/([a-z])([A-Z])/g,'$1 $2'),210,y,{pageNumber:starts[i]});doc.setFont('helvetica','normal');doc.setTextColor(90,104,120);doc.text(c.items.filter(x=>x.active).length+' products  ·  page '+starts[i],W-170,y,{align:'right'})});
-  doc.setTextColor(0);doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text((st.footerBold||''),W/2,H-60,{align:'center'});
+  L.forEach(([s,c],i)=>{const y=385+i*28;doc.setFont(F,'bold');doc.setFontSize(13);doc.setTextColor(...PS.item);doc.text(c.number,170,y);doc.setTextColor(20,32,44);doc.textWithLink(c.title.replace(/([a-z])([A-Z])/g,'$1 $2'),210,y,{pageNumber:starts[i]});doc.setFont(F,'normal');doc.setTextColor(90,104,120);doc.text(c.items.filter(x=>x.active).length+' products  ·  page '+starts[i],W-170,y,{align:'right'})});
+  doc.setTextColor(0);doc.setFont(F,'bold');doc.setFontSize(12);doc.text((st.footerBold||''),W/2,H-60,{align:'center'});
   return doc.output('blob');
 }
 async function downloadBook(){try{const b=await buildBook();progress('');await saveFile((S.settings.company||'Catalog').replace(/[^A-Za-z0-9 ]/g,'').trim()+' Catalog '+today().replace(/\//g,'-')+'.pdf',b)}catch(e){progress('');setStatus('The catalog could not be built: '+e.message,'err')}}
