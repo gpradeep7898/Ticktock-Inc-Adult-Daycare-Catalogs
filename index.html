@@ -59,7 +59,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .btn.ghost{border-color:transparent;background:transparent}
 .btn:disabled{opacity:.45;cursor:default}
 .btn.small{padding:4px 9px;font-size:12px}
-.layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px;margin-top:16px}
+.layout{display:grid;grid-template-columns:268px minmax(0,1fr);gap:20px;margin-top:16px}
 .rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 74px);align-self:start;max-height:calc(100vh - 96px);overflow:auto;display:flex;flex-direction:column;gap:1px}
 .rail .cat{display:grid;grid-template-columns:26px 1fr auto;gap:6px;align-items:baseline;text-align:left;border:0;background:transparent;padding:7px 8px;border-radius:6px;cursor:pointer;color:var(--ink)}
 .rail .cat:hover{background:var(--sunk)}
@@ -67,6 +67,16 @@ button,input,select,textarea{font:inherit;color:inherit}
 .rail .ct{font:500 11px var(--f-mono);color:var(--muted)}
 .rail .cat[aria-current="true"]{background:var(--brand-soft)}
 .rail .cat[aria-current="true"] .no{color:var(--brand)}
+.rail{gap:3px;padding-right:4px;scrollbar-width:thin}
+.rail .railhead{font:700 11px var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:2px 12px 8px}
+.rail .cat{grid-template-columns:30px 1fr auto;gap:8px;align-items:center;padding:0 12px;min-height:42px;border-radius:10px;font-size:15px;line-height:1.25;border-left:3px solid transparent;transition:background .12s}
+.rail .cat:hover{background:var(--sunk)}
+.rail .cat:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.rail .cat .nm{overflow-wrap:anywhere}
+.rail .ct{font:600 11.5px var(--f-mono);background:var(--sunk);color:var(--muted);padding:2px 8px;border-radius:999px;min-width:28px;text-align:center}
+.rail .cat[aria-current="true"]{background:var(--brand-soft);border-left-color:var(--brand);font-weight:700}
+.rail .cat[aria-current="true"] .ct{background:var(--surface);color:var(--brand)}
+.catpick{font-size:16px}
 .railfoot{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
 .catpick{display:none}
 .dlbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;background:var(--brand-soft);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:12px}
@@ -366,12 +376,14 @@ function render(){applyPreviewStyle();
   if(S.tab==='cat'){renderRail();renderCatalog()}else renderWeb();
   renderDrawer();
 }
+const niceTitle=t=>String(t||'').replace(/([a-z])([A-Z])/g,'$1 $2').replace(/\s*&\s*/g,' & ').replace(/^./,m=>m.toUpperCase());
 function renderRail(){
   const L=catList();
-  $('#rail').innerHTML=L.map(([s,c])=>`<button class="cat" data-slug="${s}" aria-current="${s===S.current}"><span class="no">${esc(c.number)}</span><span>${esc(c.title)}</span><span class="ct">${c.items.filter(i=>i.active).length}</span></button>`).join('')+
+  $('#rail').innerHTML=(L.length>1?'<div class="railhead">Catalogs</div>':'')+L.map(([s,c])=>`<button class="cat" data-slug="${s}" aria-current="${s===S.current}"><span class="no">${esc(c.number)}</span><span class="nm">${esc(niceTitle(c.title))}</span><span class="ct">${c.items.filter(i=>i.active).length}</span></button>`).join('')+
     `<div class="railfoot"><button class="btn ghost" id="setbtn">PDF font, colors &amp; header</button></div>`;
   $('#dlbar').innerHTML=`<div><b>Send to customers</b><small>One file with all ${L.length} catalogs and a contents page</small></div><div class="dlacts"><button class="btn primary" id="bookpdf" ${L.length?'':'disabled'}>Full catalog, one PDF</button><button class="btn" id="allpdf" ${L.length?'':'disabled'}>All ${L.length} PDFs (.zip)</button><label class="sizepick">File size <select id="quality"><option value="small" ${S.quality!=='print'?'selected':''}>Small, for WhatsApp</option><option value="print" ${S.quality==='print'?'selected':''}>Large, for printing</option></select></label></div>`;
-  $('#catpick').innerHTML=L.map(([s,c])=>`<option value="${s}" ${s===S.current?'selected':''}>${esc(c.number+' · '+c.title)} (${c.items.length})</option>`).join('');
+  {const r=$('#rail'),a=r.querySelector('.cat[aria-current="true"]');if(a){const top=a.offsetTop-r.offsetTop,bot=top+a.offsetHeight;if(top<r.scrollTop)r.scrollTop=top-8;else if(bot>r.scrollTop+r.clientHeight)r.scrollTop=bot-r.clientHeight+8}}
+  $('#catpick').innerHTML=L.map(([s,c])=>`<option value="${s}" ${s===S.current?'selected':''}>${esc(c.number+' · '+niceTitle(c.title))} (${c.items.length})</option>`).join('');
 }
 function renderCatalog(){
   const panel=$('#catpanel');if(!S.db)return;
@@ -397,7 +409,7 @@ function renderCatalog(){
       <td>${it.active?'<span class="chip ok">Shown</span>':'<span class="chip mute">Hidden</span>'}</td><td class="hide-sm">${it.pair?'<span class="chip brand">Shares box</span>':''}</td>
       <td class="hide-sm">${syncable(norm(it.item))&&wi[norm(it.item)]?'<span class="chip ok">On website</span>':'<span class="chip warn">Not on website</span>'}</td></tr>`).join('')}</tbody></table></div>`;
   }
-  panel.innerHTML=`<div class="phead"><div><h2><span class="no">${esc(c.number)}</span>${esc(c.title)}</h2>
+  panel.innerHTML=`<div class="phead"><div><h2><span class="no">${esc(c.number)}</span>${esc(niceTitle(c.title))}</h2>
     <div class="meta"><span>${shown} of ${c.items.length} shown in the PDF</span><label>Prices as of <input id="asof" value="${esc(c.asOf||'')}" ${ro?'disabled':''}></label>
     ${c.updatedAt?`<span>Edited ${new Date(c.updatedAt).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</span>`:''}</div></div>
     <div class="actions"><div class="seg" role="group" aria-label="View"><button data-view="sheet" aria-pressed="${S.view==='sheet'}">Sheet</button><button data-view="list" aria-pressed="${S.view==='list'}">List</button></div>
