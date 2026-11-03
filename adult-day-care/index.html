@@ -242,9 +242,9 @@ dialog::backdrop{background:rgb(10 18 26/.4)}
   </div>
   <label class="field">Text size in the PDF<select id="s-size"><option value="0.9">Smaller (90%)</option><option value="1">Normal (100%)</option><option value="1.15">Large (115%)</option><option value="1.3">Extra large (130%)</option><option value="1.5">Huge (150%)</option></select></label>
   <div style="margin-top:6px;font-weight:700">Preview</div>
-  <div class="sheet" style="display:block;max-width:200px;margin:4px auto 8px"><div class="prod" style="pointer-events:none;width:100%"><span class="pcode">T 01</span><span class="pname">Trident Sugar Free Gum, Original Flavor, 14 Pieces, 15 Count</span><span class="pfoot"><span><b>12</b>/cs</span><span class="pprice">$15.00</span></span></div></div>
+  <div class="sheet" style="display:block;max-width:200px;margin:4px auto 8px"><div class="prod" style="pointer-events:none;width:100%;box-sizing:border-box"><span class="pcode">T 01</span><span class="pname">Trident Sugar Free Gum, Original Flavor, 14 Pieces, 15 Count</span><span class="pfoot"><span><b>12</b>/cs</span><span class="pprice">$15.00</span></span></div></div>
   <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" id="s-preview" type="button">Preview PDF with these settings</button><button class="btn small" id="s-reset" type="button">Reset font and colors</button></div>
-  <div class="dlgfoot"><button class="btn" id="s-cancel">Cancel</button><button class="btn primary" id="s-save">Save</button></div>
+  <div class="dlgfoot"><span class="status" id="s-locknote" hidden style="margin-right:auto">Tap Unlock editing first to save.</span><button class="btn" id="s-cancel">Cancel</button><button class="btn primary" id="s-save">Save</button></div>
 </div></dialog>
 
 <dialog id="histDlg"><div class="dlg"><h3>Recent changes</h3><div class="hist" id="histList"></div><div class="dlgfoot"><button class="btn" id="h-close">Close</button></div></div></dialog>
@@ -529,7 +529,7 @@ document.addEventListener('click',e=>{
   if(t.id==='allpdf'){downloadAll();return}
   if(t.id==='bookpdf'){downloadBook();return}
   if(t.id==='xlsx'){downloadXlsx();return}
-  if(t.id==='setbtn'){['company','tagline','address','footerBold','footerText'].forEach(k=>$('#s-'+k).value=S.settings[k]||'');$('#s-font').innerHTML=Object.entries(PDF_FONTS).map(([k,f])=>`<option value="${k}">${f.label}</option>`).join('');PDF_KEYS.forEach(k=>$('#s-'+k).value=S.settings[k]||PDF_DEF[k]);applyPreviewStyle();$('#s-save').disabled=!S.canWrite;$('#settingsDlg').showModal();return}
+  if(t.id==='setbtn'){['company','tagline','address','footerBold','footerText'].forEach(k=>$('#s-'+k).value=S.settings[k]||'');$('#s-font').innerHTML=Object.entries(PDF_FONTS).map(([k,f])=>`<option value="${k}">${f.label}</option>`).join('');PDF_KEYS.forEach(k=>$('#s-'+k).value=S.settings[k]||PDF_DEF[k]);applyPreviewStyle();$('#s-save').disabled=!S.canWrite;$('#s-locknote').hidden=!!S.canWrite;$('#settingsDlg').showModal();return}
   if(t.id==='s-reset'){PDF_KEYS.forEach(k=>$('#s-'+k).value=PDF_DEF[k]);applyPreviewStyle(dlgVals());return}
   if(t.id==='s-preview'){t.textContent='Building…';previewPdf(S.current,dlgVals()).finally(()=>t.textContent='Preview PDF with these settings');return}
   if(t.id==='prevbtn'){previewPdf(S.current);return}
