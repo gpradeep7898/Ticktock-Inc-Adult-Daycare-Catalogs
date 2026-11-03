@@ -1,4 +1,19 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+@font-face{font-family:"PDF Poppins";src:url(/fonts/poppins-regular.ttf);font-weight:400}
+@font-face{font-family:"PDF Poppins";src:url(/fonts/poppins-bold.ttf);font-weight:700}
+@font-face{font-family:"PDF Carlito";src:url(/fonts/carlito-regular.ttf);font-weight:400}
+@font-face{font-family:"PDF Carlito";src:url(/fonts/carlito-bold.ttf);font-weight:700}
+@font-face{font-family:"PDF Caladea";src:url(/fonts/caladea-regular.ttf);font-weight:400}
+@font-face{font-family:"PDF Caladea";src:url(/fonts/caladea-bold.ttf);font-weight:700}
+@font-face{font-family:"PDF DejaVu Sans";src:url(/fonts/dejavusans-regular.ttf);font-weight:400}
+@font-face{font-family:"PDF DejaVu Sans";src:url(/fonts/dejavusans-bold.ttf);font-weight:700}
+@font-face{font-family:"PDF DejaVu Serif";src:url(/fonts/dejavuserif-regular.ttf);font-weight:400}
+@font-face{font-family:"PDF DejaVu Serif";src:url(/fonts/dejavuserif-bold.ttf);font-weight:700}
+.sheet .prod .pcode{font-family:var(--pv-font,var(--f-display));color:var(--pv-item,#3182ce);font-size:calc(13px*var(--pv-z,1))}
+.sheet .prod .pname{font-family:var(--pv-font,var(--f-body));color:var(--pv-name,#4a4a4a);font-size:calc(11px*var(--pv-z,1))}
+.sheet .prod .pfoot{font-family:var(--pv-font,var(--f-body));font-size:calc(12px*var(--pv-z,1))}
+.sheet .prod .pprice{font-family:var(--pv-font,var(--f-mono));color:var(--pv-price,#ff5757);font-size:calc(13px*var(--pv-z,1))}
+</style></head><body>
 <title>Tick Tock Inc. Catalogs</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -168,7 +183,7 @@ dialog::backdrop{background:rgb(10 18 26/.4)}
 </style>
 
 <header class="top">
-  <div class="brand"><div><h1 id="coname">Tick Tock Inc.</h1><div class="tagline" id="cotag">Importers &amp; Distributors of General Merchandise — Est. 1987</div><div class="coaddr" id="coaddr">240 Moonachie Ave. Suite 400, Moonachie, NJ 07074 | Phone: 201-853-9200 | Fax: 201-853-9477 | Email: tiktok@att.net</div><small id="totals">Loading price book…</small></div></div>
+  <div class="brand"><div><h1 id="coname" style="cursor:pointer" title="Home: Tick Tock Catalogs" onclick="location.href='/'">Tick Tock Inc.</h1><div class="tagline" id="cotag">Importers &amp; Distributors of General Merchandise — Est. 1987</div><div class="coaddr" id="coaddr">240 Moonachie Ave. Suite 400, Moonachie, NJ 07074 | Phone: 201-853-9200 | Fax: 201-853-9477 | Email: tiktok@att.net</div><small id="totals">Loading price book…</small></div></div>
   <div class="tabs" role="tablist"><button role="tab" id="tab-cat" aria-selected="true">Catalogs</button><button role="tab" id="tab-web" aria-selected="false">Website list</button></div>
   <a class="btn small" id="adclink" href="/adult-day-care/" style="text-decoration:none;font-weight:600">Adult Day Care Catalog →</a>
   <label class="search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
@@ -208,6 +223,7 @@ dialog::backdrop{background:rgb(10 18 26/.4)}
   <div class="dlgfoot"><button class="btn" id="b-cancel">Cancel</button><button class="btn primary" id="b-apply" disabled>Apply</button></div>
 </div></dialog>
 
+<dialog id="pdfDlg"><div class="dlg" style="width:min(920px,96vw)"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h3 style="margin:0">PDF preview</h3><span style="display:flex;gap:8px"><a class="btn small" id="pdfOpen" target="_blank" rel="noopener" style="text-decoration:none">Open full size</a><button class="btn small" id="pdfClose" type="button">Close</button></span></div><iframe id="pdfFrame" title="PDF preview" style="width:100%;height:76vh;border:1px solid var(--line);margin-top:10px;background:#fff"></iframe></div></dialog>
 <dialog id="settingsDlg"><div class="dlg">
   <h3>PDF header, footer, font and colors</h3>
   <label class="field">Company name<input id="s-company"></label>
@@ -216,14 +232,17 @@ dialog::backdrop{background:rgb(10 18 26/.4)}
   <label class="field">Footer, bold part<input id="s-footerBold"></label>
   <label class="field">Footer text ({date} becomes the catalog's prices-as-of date)<input id="s-footerText"></label>
   <div style="margin-top:10px;font-weight:700">Font and colors</div>
-  <label class="field">Font<select id="s-font"><option value="helvetica">Helvetica (clean)</option><option value="times">Times (classic)</option><option value="courier">Courier (typewriter)</option></select></label>
+  <label class="field">Font<select id="s-font"></select></label>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
     <label class="field">Item # color<input type="color" id="s-cItem" style="height:36px;width:100%"></label>
     <label class="field">Product name color<input type="color" id="s-cName" style="height:36px;width:100%"></label>
     <label class="field">Price color<input type="color" id="s-cPrice" style="height:36px;width:100%"></label>
     <label class="field">Company name color<input type="color" id="s-cHead" style="height:36px;width:100%"></label>
   </div>
-  <div><button class="btn small" id="s-reset" type="button">Reset font and colors</button></div>
+  <label class="field">Text size in the PDF<select id="s-size"><option value="0.9">Smaller (90%)</option><option value="1">Normal (100%)</option><option value="1.15">Large (115%)</option><option value="1.3">Extra large (130%)</option><option value="1.5">Huge (150%)</option></select></label>
+  <div style="margin-top:6px;font-weight:700">Preview</div>
+  <div class="sheet" style="display:block;max-width:200px;margin:4px auto 8px"><div class="prod" style="pointer-events:none;width:100%"><span class="pcode">T 01</span><span class="pname">Trident Sugar Free Gum, Original Flavor, 14 Pieces, 15 Count</span><span class="pfoot"><span><b>12</b>/cs</span><span class="pprice">$15.00</span></span></div></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" id="s-preview" type="button">Preview PDF with these settings</button><button class="btn small" id="s-reset" type="button">Reset font and colors</button></div>
   <div class="dlgfoot"><button class="btn" id="s-cancel">Cancel</button><button class="btn primary" id="s-save">Save</button></div>
 </div></dialog>
 
@@ -338,7 +357,7 @@ function cellsOf(items,activeOnly){const cells=[];items.forEach(it=>{if(activeOn
 function matches(it){if(!S.q)return true;const q=S.q.toLowerCase();return norm(it.item).toLowerCase().includes(norm(q).toLowerCase())||String(it.name).toLowerCase().includes(q)}
 
 /* ---------- rendering ---------- */
-function render(){
+function render(){applyPreviewStyle();
   const L=catList(),tot=L.reduce((n,[,c])=>n+c.items.length,0),wtot=Object.values(S.web).reduce((n,w)=>n+w.rows.length,0);
   if(S.settings.company){$('#coname').textContent=S.settings.company;$('#cotag').textContent=S.settings.tagline||'';$('#coaddr').textContent=S.settings.address||''}
   $('#totals').textContent=L.length?`${L.length} catalogs · ${tot} products · ${wtot} on the website`:'Loading price book…';
@@ -382,7 +401,7 @@ function renderCatalog(){
     <div class="meta"><span>${shown} of ${c.items.length} shown in the PDF</span><label>Prices as of <input id="asof" value="${esc(c.asOf||'')}" ${ro?'disabled':''}></label>
     ${c.updatedAt?`<span>Edited ${new Date(c.updatedAt).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</span>`:''}</div></div>
     <div class="actions"><div class="seg" role="group" aria-label="View"><button data-view="sheet" aria-pressed="${S.view==='sheet'}">Sheet</button><button data-view="list" aria-pressed="${S.view==='list'}">List</button></div>
-    ${ro?'':'<button class="btn" id="addbtn">Add product</button><button class="btn" id="bulkbtn">Change prices</button>'}<button class="btn primary" id="pdfbtn">Download PDF</button></div></div>${body}`;
+    ${ro?'':'<button class="btn" id="addbtn">Add product</button><button class="btn" id="bulkbtn">Change prices</button>'}<button class="btn" id="prevbtn">Preview PDF</button><button class="btn primary" id="pdfbtn">Download PDF</button></div></div>${body}`;
 }
 function renderSearch(){
   const hits=[];for(const [s,c] of catList())c.items.forEach(it=>{if(matches(it))hits.push([s,c,it])});
@@ -509,10 +528,13 @@ document.addEventListener('click',e=>{
   if(t.id==='bookpdf'){downloadBook();return}
   if(t.id==='xlsx'){downloadXlsx();return}
   if(t.id==='unlockbtn'){unlock();return}
-  if(t.id==='setbtn'){['company','tagline','address','footerBold','footerText'].forEach(k=>$('#s-'+k).value=S.settings[k]||'');['font','cItem','cName','cPrice','cHead'].forEach(k=>$('#s-'+k).value=S.settings[k]||PDF_DEF[k]);$('#s-save').disabled=!S.canWrite;$('#settingsDlg').showModal();return}
-  if(t.id==='s-reset'){['font','cItem','cName','cPrice','cHead'].forEach(k=>$('#s-'+k).value=PDF_DEF[k]);return}
+  if(t.id==='setbtn'){['company','tagline','address','footerBold','footerText'].forEach(k=>$('#s-'+k).value=S.settings[k]||'');$('#s-font').innerHTML=Object.entries(PDF_FONTS).map(([k,f])=>`<option value="${k}">${f.label}</option>`).join('');PDF_KEYS.forEach(k=>$('#s-'+k).value=S.settings[k]||PDF_DEF[k]);applyPreviewStyle();$('#s-save').disabled=!S.canWrite;$('#settingsDlg').showModal();return}
+  if(t.id==='s-reset'){PDF_KEYS.forEach(k=>$('#s-'+k).value=PDF_DEF[k]);applyPreviewStyle(dlgVals());return}
+  if(t.id==='s-preview'){t.textContent='Building…';previewPdf(S.current,dlgVals()).finally(()=>t.textContent='Preview PDF with these settings');return}
+  if(t.id==='prevbtn'){previewPdf(S.current);return}
+  if(t.id==='pdfClose'){$('#pdfDlg').close();return}
   if(t.id==='s-cancel'){$('#settingsDlg').close();return}
-  if(t.id==='s-save'){const v={};['company','tagline','address','footerBold','footerText'].forEach(k=>v[k]=$('#s-'+k).value.trim());['font','cItem','cName','cPrice','cHead'].forEach(k=>v[k]=$('#s-'+k).value);S.settings={...S.settings,...v};save('settings/main',v);logHistory('Changed the PDF header, footer, font or colors');$('#settingsDlg').close();toast('PDF header, footer, font and colors saved',false);return}
+  if(t.id==='s-save'){const v={};['company','tagline','address','footerBold','footerText'].forEach(k=>v[k]=$('#s-'+k).value.trim());PDF_KEYS.forEach(k=>v[k]=$('#s-'+k).value);S.settings={...S.settings,...v};save('settings/main',v);logHistory('Changed the PDF header, footer, font or colors');$('#settingsDlg').close();toast('PDF header, footer, font and colors saved',false);return}
   if(t.id==='bulkbtn'){$('#bulkScope').textContent=`Raise or lower prices in ${cur().title}. You see every new price before anything changes.`;$('#b-amt').value='';bulkPreview();$('#bulkDlg').showModal();return}
   if(t.id==='b-cancel'){$('#bulkDlg').close();return}
   if(t.id==='b-apply'){bulkApply();return}
@@ -581,38 +603,71 @@ function mkDoc(jsPDF){
   };
   return new Proxy(o,{get:(t,k)=>k in t?t[k]:(typeof d[k]==='function'?d[k].bind(d):d[k])});
 }
-const PDF_DEF={font:'helvetica',cItem:'#3182ce',cName:'#4a4a4a',cPrice:'#ff5757',cHead:'#3182ce'};
+const PDF_FONTS={
+  helvetica:{label:'Helvetica (clean)',css:'Helvetica,Arial,sans-serif'},
+  times:{label:'Times (classic serif)',css:'"Times New Roman",Times,serif'},
+  courier:{label:'Courier (typewriter)',css:'"Courier New",Courier,monospace'},
+  poppins:{label:'Poppins (modern, rounded)',css:'"PDF Poppins",sans-serif',files:['poppins-regular','poppins-bold']},
+  carlito:{label:'Carlito (friendly, like Calibri)',css:'"PDF Carlito",sans-serif',files:['carlito-regular','carlito-bold']},
+  caladea:{label:'Caladea (elegant serif, like Cambria)',css:'"PDF Caladea",serif',files:['caladea-regular','caladea-bold']},
+  dejavusans:{label:'DejaVu Sans (wide, easy to read)',css:'"PDF DejaVu Sans",sans-serif',files:['dejavusans-regular','dejavusans-bold']},
+  dejavuserif:{label:'DejaVu Serif (wide serif)',css:'"PDF DejaVu Serif",serif',files:['dejavuserif-regular','dejavuserif-bold']}
+};
+const PDF_SIZES=[['0.9','Smaller (90%)'],['1','Normal (100%)'],['1.15','Large (115%)'],['1.3','Extra large (130%)'],['1.5','Huge (150%)']];
+const PDF_KEYS=['font','cItem','cName','cPrice','cHead','size'];
+const PDF_DEF={font:'helvetica',cItem:'#3182ce',cName:'#4a4a4a',cPrice:'#ff5757',cHead:'#3182ce',size:'1'};
 function pdfStyle(){const st=S.settings||{};const rgb=(h,d)=>{const m=/^#?([0-9a-f]{6})$/i.exec(h||'')||/^#?([0-9a-f]{6})$/i.exec(d);const n=parseInt(m[1],16);return[(n>>16)&255,(n>>8)&255,n&255]};
-  return{font:['helvetica','times','courier'].includes(st.font)?st.font:'helvetica',item:rgb(st.cItem,PDF_DEF.cItem),name:rgb(st.cName,PDF_DEF.cName),price:rgb(st.cPrice,PDF_DEF.cPrice),head:rgb(st.cHead,PDF_DEF.cHead)}}
+  const z=Number(st.size);
+  return{font:PDF_FONTS[st.font]?st.font:'helvetica',size:PDF_SIZES.some(s=>Number(s[0])===z)?z:1,item:rgb(st.cItem,PDF_DEF.cItem),name:rgb(st.cName,PDF_DEF.cName),price:rgb(st.cPrice,PDF_DEF.cPrice),head:rgb(st.cHead,PDF_DEF.cHead)}}
+function applyPreviewStyle(vals){const st=vals||S.settings||{};const g=k=>st[k]||PDF_DEF[k];const r=document.documentElement.style;
+  r.setProperty('--pv-font',(PDF_FONTS[g('font')]||PDF_FONTS.helvetica).css);r.setProperty('--pv-item',g('cItem'));r.setProperty('--pv-name',g('cName'));r.setProperty('--pv-price',g('cPrice'));
+  r.setProperty('--pv-z',PDF_SIZES.some(s=>s[0]===String(g('size')))?String(g('size')):'1')}
+function dlgVals(){const v={};PDF_KEYS.forEach(k=>v[k]=$('#s-'+k).value);return v}
+const FONT_CACHE={};
+async function ensureFont(doc,key){
+  const f=PDF_FONTS[key];if(!f)return 'helvetica';if(!f.files)return key;
+  try{
+    for(let i=0;i<2;i++){const fn=f.files[i]+'.ttf';
+      if(!FONT_CACHE[fn]){const r=await fetch('/fonts/'+fn);if(!r.ok)throw new Error('font');const buf=new Uint8Array(await r.arrayBuffer());let bin='';for(let o=0;o<buf.length;o+=0x8000)bin+=String.fromCharCode.apply(null,buf.subarray(o,o+0x8000));FONT_CACHE[fn]=btoa(bin)}
+      doc.addFileToVFS(fn,FONT_CACHE[fn]);doc.addFont(fn,key,i?'bold':'normal')}
+    return key;
+  }catch(e){setStatus('That font did not load, so Helvetica was used.','err');return 'helvetica'}
+}
+async function previewPdf(slug,vals){
+  const saved=S.settings;if(vals)S.settings={...S.settings,...vals};progress('Building preview…');
+  try{const b=await buildPdf(slug);progress('');const d=$('#pdfDlg'),f=$('#pdfFrame');if(f.dataset.url)URL.revokeObjectURL(f.dataset.url);const u=URL.createObjectURL(b);f.dataset.url=u;f.src=u;$('#pdfOpen').href=u;if(!d.open)d.showModal()}
+  catch(e){progress('');setStatus('The preview could not be built: '+e.message,'err')}
+  finally{S.settings=saved}
+}
 async function buildPdf(slug,opts={}){
   const c=S.cats[slug],st=S.settings||{};
   const cells=[];c.items.forEach(it=>{if(it.pair&&cells.length)cells[cells.length-1].push(it);else cells.push([it])});
   const shown=cells.map(cell=>cell.filter(i=>i.active)).filter(cell=>cell.length);
   const {jsPDF}=window.jspdf;const W=842,H=PDF_H,M=20,colW=(W-2*M)/5,rowH=232;
-  const doc=opts.doc||mkDoc(jsPDF);if(opts.doc)doc.addPage([W,H]);const startPage=doc.getNumberOfPages();const PS=pdfStyle(),F=PS.font,BLUE=PS.item,GREY=PS.name,RED=PS.price,HEAD=PS.head;const asOf=c.asOf||today();
+  const doc=opts.doc||mkDoc(jsPDF);if(opts.doc)doc.addPage([W,H]);const startPage=doc.getNumberOfPages();const PS=pdfStyle(),Z=PS.size,BLUE=PS.item,GREY=PS.name,RED=PS.price,HEAD=PS.head;const F=opts.doc?(opts.doc.__F||'helvetica'):await ensureFont(doc,PS.font);const fs=n=>doc.setFontSize(n*Z);const asOf=c.asOf||today();
   const frame=first=>{doc.setTextColor(0);doc.setFont(F,'bold');doc.setFontSize(10);doc.text(c.name,W-40,30,{align:'right'});
     const fb=(st.footerBold||'')+' ',ft=(st.footerText||'').replace('{date}',asOf);doc.setFontSize(11);doc.text(fb,60,H-40);const w=doc.getTextWidth(fb);doc.setFont(F,'normal');doc.text(ft,60+w,H-40,{maxWidth:W-120-w});
     if(!first)return 60;doc.setTextColor(...HEAD);doc.setFont(F,'bold');doc.setFontSize(24);doc.text(st.company||'',W/2,90,{align:'center'});
     doc.setTextColor(...GREY);doc.setFontSize(11);doc.text(st.tagline||'',W/2,106,{align:'center'});doc.setFont(F,'normal');doc.setFontSize(9);doc.text(st.address||'',W/2,119,{align:'center'});return 128};
-  const foot=(x,w,y,pack,price)=>{const [n,...u]=String(pack||'').split('/');doc.setTextColor(0);doc.setFont(F,'bold');doc.setFontSize(10);doc.text(n||'',x+4,y);if(u.length){doc.setFont(F,'normal');doc.text('/'+u.join('/'),x+4+doc.getTextWidth(n||''),y)}
-    doc.setTextColor(...RED);doc.setFont(F,'bold');doc.setFontSize(10.5);doc.text('$'+money(price),x+w-4,y,{align:'right'})};
+  const foot=(x,w,y,pack,price)=>{const [n,...u]=String(pack||'').split('/');doc.setTextColor(0);doc.setFont(F,'bold');fs(10);doc.text(n||'',x+4,y);if(u.length){doc.setFont(F,'normal');doc.text('/'+u.join('/'),x+4+doc.getTextWidth(n||''),y)}
+    doc.setTextColor(...RED);doc.setFont(F,'bold');fs(10.5);doc.text('$'+money(price),x+w-4,y,{align:'right'})};
   let top=frame(true);
   for(let i=0;i<shown.length;i++){
     const cell=shown[i],col=i%5;if(col===0&&i>0)top+=rowH;if(col===0&&top+rowH>H-70){doc.addPage([W,H]);top=frame(false)}
     const x=M+col*colW,y=top;doc.setDrawColor(0);doc.setLineWidth(1);doc.rect(x,y,colW,rowH);
     const k=cell.length,sw=colW/k,same=cell.every(it=>it.price===cell[0].price&&it.pack===cell[0].pack);
     for(let j=0;j<k;j++){const it=cell[j],sx=x+j*sw;
-      doc.setTextColor(...BLUE);doc.setFont(F,'bold');doc.setFontSize(k>1?10:11);doc.text(String(it.item),sx+sw/2,y+16,{align:'center'});
-      doc.setTextColor(...GREY);doc.setFontSize(k>1?7.5:8.5);doc.splitTextToSize(String(it.name),sw-8).slice(0,4).forEach((l,q)=>doc.text(l,sx+sw/2,y+29+q*(k>1?9.5:11),{align:'center'}));
-      const im=await loadImg(photoUrl(it));if(im){const bw=sw-(k>1?10:20),bh=k>1?128:140,s=Math.min(bw/im.w,bh/im.h),dw=im.w*s,dh=im.h*s;doc.addImage(im.data,'JPEG',sx+(sw-dw)/2,y+rowH-24-bh+(bh-dh)/2,dw,dh,undefined,'FAST')}
+      doc.setTextColor(...BLUE);doc.setFont(F,'bold');fs(k>1?10:11);doc.text(String(it.item),sx+sw/2,y+10+6*Z,{align:'center'});
+      doc.setTextColor(...GREY);fs(k>1?7.5:8.5);const lh=(k>1?9.5:11)*Z,L=Z>1?3:4,ns=29+(Z-1)*10;doc.splitTextToSize(String(it.name),sw-8).slice(0,L).forEach((l,q)=>doc.text(l,sx+sw/2,y+ns+q*lh,{align:'center'}));
+      const im=await loadImg(photoUrl(it));if(im){const bw=sw-(k>1?10:20),bh=Math.min(k>1?128:140,rowH-26-(ns+(L-1)*lh+3)),s=Math.min(bw/im.w,bh/im.h),dw=im.w*s,dh=im.h*s;doc.addImage(im.data,'JPEG',sx+(sw-dw)/2,y+rowH-24-bh+(bh-dh)/2,dw,dh,undefined,'FAST')}
       if(!same)foot(sx,sw,y+rowH-7,it.pack,it.price)}
     if(same)foot(x,colW,y+rowH-7,cell[0].pack,cell[0].price);
   }
   return opts.doc?startPage:doc.output('blob');
 }
 async function buildBook(){
-  const PS=pdfStyle(),F=PS.font;const {jsPDF}=window.jspdf,W=842,H=PDF_H,st=S.settings||{},L=catList();
-  const doc=mkDoc(jsPDF);const starts=[];
+  const PS=pdfStyle();const {jsPDF}=window.jspdf,W=842,H=PDF_H,st=S.settings||{},L=catList();
+  const doc=mkDoc(jsPDF);const starts=[];const F=await ensureFont(doc,PS.font);doc.__F=F;
   for(let i=0;i<L.length;i++){progress(`Adding ${i+1} of ${L.length}: ${L[i][1].title}`);starts.push(await buildPdf(L[i][0],{doc}))}
   doc.setPage(1);
   doc.setTextColor(...PS.head);doc.setFont(F,'bold');doc.setFontSize(40);doc.text(st.company||'',W/2,220,{align:'center'});
@@ -643,6 +698,10 @@ async function downloadXlsx(){
   await saveFile('ticktockinc.com.xlsx',new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
 }
 
+document.addEventListener('input',e=>{const el=e.target;if(el&&el.closest&&el.closest('#settingsDlg')&&/^s-(font|cItem|cName|cPrice|cHead|size)$/.test(el.id))applyPreviewStyle(dlgVals())});
+document.addEventListener('change',e=>{const el=e.target;if(el&&el.closest&&el.closest('#settingsDlg')&&/^s-(font|size)$/.test(el.id))applyPreviewStyle(dlgVals())});
+$('#settingsDlg').addEventListener('close',()=>applyPreviewStyle());
+$('#pdfDlg').addEventListener('close',()=>{const f=$('#pdfFrame');if(f.dataset.url){URL.revokeObjectURL(f.dataset.url);f.dataset.url='';f.removeAttribute('src')}});
 /* ---------- boot ---------- */
 function makeUploader(){
   return {upload:async file=>{
