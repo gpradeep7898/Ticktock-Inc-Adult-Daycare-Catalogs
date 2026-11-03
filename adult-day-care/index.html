@@ -244,7 +244,6 @@ dialog::backdrop{background:rgb(10 18 26/.4)}
   <h4>Getting files out</h4>
   <ol>
     <li><b>Download PDF</b> (top right of each catalog) gives that one catalog. In the blue <b>Send to customers</b> bar, <b>Full catalog, one PDF</b> gives every catalog in one file, and <b>All 25 PDFs (.zip)</b> gives them as separate files.</li>
-    <li><b>Website list → Download website sheet</b> gives ticktockinc.com.xlsx in the same format as before. Upload it to the website as usual.</li>
   </ol>
   <h4>Sending to customers on WhatsApp</h4>
   <ol>
@@ -376,11 +375,10 @@ function renderCatalog(){
       <div class="sheetnote"><span>Click any product to edit it.</span>${ro?'':'<span>Drag a box by its corner to move it.</span>'}<span>${pairs} boxes hold two products.</span></div></div>`;
   }else{
     const wi=webIndex();
-    body=`<div class="tablewrap"><table><thead><tr><th>Photo</th><th>Item #</th><th>Name</th><th>Pack</th><th>Price</th><th>In PDF</th><th class="hide-sm">Box</th><th class="hide-sm">Website</th></tr></thead><tbody>${c.items.map(it=>`
+    body=`<div class="tablewrap"><table><thead><tr><th>Photo</th><th>Item #</th><th>Name</th><th>Pack</th><th>Price</th><th>In PDF</th><th class="hide-sm">Box</th></tr></thead><tbody>${c.items.map(it=>`
       <tr class="clickable ${it.active?'':'off'}" data-id="${it.id}"><td><img class="thumb" src="${esc(photoUrl(it))}" alt="" loading="lazy"></td><td class="code">${esc(it.item)}</td><td>${esc(it.name)}</td><td>${esc(it.pack)}</td>
       <td>${ro?`<span class="money">$${money(it.price)}</span>`:`<input class="cell num" data-qp="${it.id}" value="${money(it.price)}" inputmode="decimal" aria-label="Price for ${esc(it.item)}">`}</td>
-      <td>${it.active?'<span class="chip ok">Shown</span>':'<span class="chip mute">Hidden</span>'}</td><td class="hide-sm">${it.pair?'<span class="chip brand">Shares box</span>':''}</td>
-      <td class="hide-sm">${syncable(norm(it.item))&&wi[norm(it.item)]?'<span class="chip ok">On website</span>':'<span class="chip warn">Not on website</span>'}</td></tr>`).join('')}</tbody></table></div>`;
+      <td>${it.active?'<span class="chip ok">Shown</span>':'<span class="chip mute">Hidden</span>'}</td><td class="hide-sm">${it.pair?'<span class="chip brand">Shares box</span>':''}</td></tr>`).join('')}</tbody></table></div>`;
   }
   panel.innerHTML=`<div class="phead"><div><h2><span class="no">${esc(c.number)}</span>${esc(c.title)}</h2>
     <div class="meta"><span>${shown} of ${c.items.length} shown in the PDF</span><label>Prices as of <input id="asof" value="${esc(c.asOf||'')}" ${ro?'disabled':''}></label>
